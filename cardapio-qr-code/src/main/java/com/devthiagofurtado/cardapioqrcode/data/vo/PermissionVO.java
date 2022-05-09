@@ -3,6 +3,8 @@ package com.devthiagofurtado.cardapioqrcode.data.vo;
 import com.devthiagofurtado.cardapioqrcode.util.EnumSerializerCustom;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.Objects;
+
 @JsonSerialize(using = EnumSerializerCustom.class)
 public enum PermissionVO {
 
@@ -29,7 +31,7 @@ public enum PermissionVO {
     public static PermissionVO retornar(Integer codigo) {
         PermissionVO v = null;
         for (PermissionVO s : PermissionVO.values()) {
-            if (s.ordinal() == codigo) {
+            if (Objects.equals(s.getCodigo(), codigo)) {
                 v = s;
                 break;
             }

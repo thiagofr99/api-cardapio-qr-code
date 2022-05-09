@@ -1,7 +1,14 @@
 package com.devthiagofurtado.cardapioqrcode.security;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AccountCredentialsVO implements Serializable {
 
     private static final long serialVersionUID = 1L;

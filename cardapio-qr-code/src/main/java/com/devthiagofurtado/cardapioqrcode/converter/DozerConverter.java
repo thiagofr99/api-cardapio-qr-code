@@ -59,9 +59,6 @@ public class DozerConverter {
                 .key(user.getId())
                 .userName(user.getUserName())
                 .fullName(user.getFullName())
-                .accountNonLocked(false)
-                .accountNonExpired(false)
-                .credentialsNonExpired(false)
                 .permissions(
                         user.getPermissions().stream().map(
                                 p-> PermissionVO.retornar(p.getId().intValue())

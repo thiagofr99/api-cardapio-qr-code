@@ -17,14 +17,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import static org.springframework.http.ResponseEntity.ok;
 
 
@@ -42,9 +41,6 @@ public class AuthController {
     @Autowired
     JwtTokenProvider tokenProvider;
 
-    @Autowired
-    UserRepository repository;
-
     @ApiOperation(value = "Authenticates a user and returns a token")
     @SuppressWarnings("rawtypes")
     @PostMapping(value = "/signin", produces = {"application/json", "application/xml", "application/x-yaml"},
@@ -56,7 +52,7 @@ public class AuthController {
 
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, pasword));
 
-            var user = repository.findByUsername(username);
+            var user = userService.findByUserName(username);
 
             var token = "";
 
@@ -79,9 +75,31 @@ public class AuthController {
     @PostMapping(value = "/salvar", produces = {"application/json", "application/xml", "application/x-yaml"},
             consumes = {"application/json", "application/xml", "application/x-yaml"})
     public ResponseEntity<UsuarioVO> salvarUsuario(@RequestBody UsuarioVO user) {
-        String token = HeaderUtil.obterToken();
-        return new ResponseEntity<>(userService.salvar(user, token), HttpStatus.CREATED);
+        String token =  HeaderUtil.obterToken();
+        String userName = tokenProvider.getUsername(token);
+        return new ResponseEntity<>(userService.salvar(user, userName), HttpStatus.CREATED);
 
+    }
+
+    @ApiOperation(value = "Buscar User por Id.")
+    @GetMapping(value = "/{id}", produces = {"application/json", "application/xml", "application/x-yaml"})
+    public UsuarioVO buscarPorId(@PathVariable(value = "id") Long id) {
+        String token =  HeaderUtil.obterToken();
+        String userName = tokenProvider.getUsername(token);
+        UsuarioVO personVO = userService.findById(id, userName);
+        personVO.add(linkTo(methodOn(AuthController.class).buscarPorId(id)).withSelfRel());
+        return personVO;
+    }
+
+    @ApiOperation(value = "Habilita um usuário por 30 dias.")
+    @PatchMapping("/{id}")
+    public ResponseEntity<UsuarioVO> habilitarLicencaTrintaDias(@PathVariable(value = "id") Long id) {
+        String token = HeaderUtil.obterToken();
+        String userName = tokenProvider.getUsername(token);
+        userService.habilitarLicencaTrintaDias(id, userName);
+        UsuarioVO vo = userService.findById(id, token);
+        vo.add(linkTo(methodOn(AuthController.class).buscarPorId(vo.getKey())).withSelfRel());
+        return new ResponseEntity<>(vo, HttpStatus.OK);
     }
 }
 
