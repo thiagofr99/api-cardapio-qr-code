@@ -2,7 +2,7 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 
 
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
-import com.devthiagofurtado.cardapioqrcode.repository.UserRepository;
+import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import com.devthiagofurtado.cardapioqrcode.security.AccountCredentialsVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.UserService;
@@ -19,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,37 +47,44 @@ public class AuthController {
     @PostMapping(value = "/signin", produces = {"application/json", "application/xml", "application/x-yaml"},
             consumes = {"application/json", "application/xml", "application/x-yaml"})
     public ResponseEntity signin(@RequestBody AccountCredentialsVO data) {
+
+        var username = data.getUsername();
+        var pasword = data.getPassword();
         try {
-            var username = data.getUsername();
-            var pasword = data.getPassword();
-
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, pasword));
-
-            var user = userService.findByUserName(username);
-
-            var token = "";
-
-            if (user != null) {
-                token = tokenProvider.createToken(username, user.getRoles());
-            } else {
-                throw new UsernameNotFoundException("Username " + username + " not found!");
-            }
-
-            Map<Object, Object> model = new HashMap<>();
-            model.put("username", username);
-            model.put("token", token);
-            return ok(model);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username/password supplied!");
         }
+
+
+        var user = userService.findByUserName(username);
+
+        var token = "";
+
+        if (user != null) {
+            if(user.getDateLicense() == null || user.getDateLicense().isAfter(LocalDate.now())){
+                token = tokenProvider.createToken(username, user.getRoles());
+            } else {
+                throw new ResourceBadRequestException("Data de licença expirou em "+user.getDateLicense()+", entre em  contato com o administrador do sistema.");
+            }
+
+        } else {
+            throw new UsernameNotFoundException("Username " + username + " not found!");
+        }
+
+        Map<Object, Object> model = new HashMap<>();
+        model.put("username", username);
+        model.put("token", token);
+        return ok(model);
+
     }
 
     @ApiOperation(value = "Saves a user and returns a VO")
     @PostMapping(value = "/salvar", produces = {"application/json", "application/xml", "application/x-yaml"},
             consumes = {"application/json", "application/xml", "application/x-yaml"})
     public ResponseEntity<UsuarioVO> salvarUsuario(@RequestBody UsuarioVO user) {
-        String token =  HeaderUtil.obterToken();
-        String userName = tokenProvider.getUsername(token);
+        String token = HeaderUtil.obterToken();
+        String userName = tokenProvider.getUsername(token.substring(7, token.length()));
         return new ResponseEntity<>(userService.salvar(user, userName), HttpStatus.CREATED);
 
     }
@@ -84,8 +92,8 @@ public class AuthController {
     @ApiOperation(value = "Buscar User por Id.")
     @GetMapping(value = "/{id}", produces = {"application/json", "application/xml", "application/x-yaml"})
     public UsuarioVO buscarPorId(@PathVariable(value = "id") Long id) {
-        String token =  HeaderUtil.obterToken();
-        String userName = tokenProvider.getUsername(token);
+        String token = HeaderUtil.obterToken();
+        String userName = tokenProvider.getUsername(token.substring(7, token.length()));
         UsuarioVO personVO = userService.findById(id, userName);
         personVO.add(linkTo(methodOn(AuthController.class).buscarPorId(id)).withSelfRel());
         return personVO;
@@ -95,9 +103,9 @@ public class AuthController {
     @PatchMapping("/{id}")
     public ResponseEntity<UsuarioVO> habilitarLicencaTrintaDias(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
-        String userName = tokenProvider.getUsername(token);
+        String userName = tokenProvider.getUsername(token.substring(7, token.length()));
         userService.habilitarLicencaTrintaDias(id, userName);
-        UsuarioVO vo = userService.findById(id, token);
+        UsuarioVO vo = userService.findById(id, userName);
         vo.add(linkTo(methodOn(AuthController.class).buscarPorId(vo.getKey())).withSelfRel());
         return new ResponseEntity<>(vo, HttpStatus.OK);
     }

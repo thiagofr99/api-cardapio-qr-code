@@ -7,7 +7,6 @@ import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import com.devthiagofurtado.cardapioqrcode.repository.UserRepository;
-import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,9 +24,6 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     UserRepository userRepository;
-
-    @Autowired
-    JwtTokenProvider jwtTokenProvider;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -71,12 +67,19 @@ public class UserService implements UserDetailsService {
         return DozerConverter.parseUsertoVO(userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não localizado!")));
     }
 
+    @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
     public void habilitarLicencaTrintaDias(Long id, String token) {
         validarUsuarioAdmin(token);
+
         var user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não localizado!"));
+        var isAtivo = user.getDateLicense().isAfter(LocalDate.now());
+
+        if (isAtivo)
+            throw new ResourceBadRequestException("Usuário com licença válida, não possível habilitar nova licença.");
+
         user.setDateLicense(LocalDate.now().plusDays(30));
         user.setCredentialsNonExpired(true);
-        user.setAccountNonLocked(true);
+        user.setAccountNonExpired(true);
         user.setAccountNonLocked(true);
         userRepository.save(user);
     }

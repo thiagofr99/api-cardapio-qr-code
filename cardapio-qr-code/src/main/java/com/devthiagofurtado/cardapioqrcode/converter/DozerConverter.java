@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import com.devthiagofurtado.cardapioqrcode.data.model.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,7 @@ public class DozerConverter {
         user1.setAccountNonExpired(false);
         user1.setAccountNonLocked(false);
         user1.setCredentialsNonExpired(false);
+        user1.setDateLicense(LocalDate.now());
         user1.setPermissions(
                 user.getPermissions().stream().map(DozerConverter::permissionVOToEntity).collect(Collectors.toList())
         );

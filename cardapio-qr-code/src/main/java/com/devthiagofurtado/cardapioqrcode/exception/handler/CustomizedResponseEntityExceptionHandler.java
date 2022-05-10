@@ -2,6 +2,7 @@ package com.devthiagofurtado.cardapioqrcode.exception.handler;
 
 import com.devthiagofurtado.cardapioqrcode.exception.ExceptionResponse;
 import com.devthiagofurtado.cardapioqrcode.exception.InvalidJwtAuthenticationException;
+import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -23,6 +24,12 @@ public class CustomizedResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidJwtAuthenticationException.class)
     public final ResponseEntity<ExceptionResponse> invalidJwtAuthenticationException(Exception ex, WebRequest request) {
+        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ResourceBadRequestException.class)
+    public final ResponseEntity<ExceptionResponse> resoureBadRequestException(Exception ex, WebRequest request) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
