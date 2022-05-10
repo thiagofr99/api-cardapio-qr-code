@@ -18,13 +18,18 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.LinkedMultiValueMap;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,6 +52,9 @@ class AuthControllerTest {
 
     @Mock
     AuthenticationManager authenticationManager;
+
+    @Mock
+    private PagedResourcesAssembler<UsuarioVO> assembler;
 
     @Autowired
     private ObjectMapper mapper;
@@ -73,6 +81,9 @@ class AuthControllerTest {
 
         BDDMockito.when(userService.findById(ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()))
                 .thenReturn(user);
+
+        BDDMockito.when(userService.findAllByUserName(ArgumentMatchers.anyString(), ArgumentMatchers.any(Pageable.class), ArgumentMatchers.anyString()))
+                .thenReturn(new PageImpl<>(Collections.singletonList(user)));
 
         BDDMockito.when(userService.salvar(ArgumentMatchers.any(UsuarioVO.class), ArgumentMatchers.anyString()))
                 .thenReturn(user);
@@ -113,5 +124,15 @@ class AuthControllerTest {
     @Test
     void habilitarLicencaTrintaDias() throws Exception {
         mockMvc.perform(patch(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
+    }
+
+    @Test
+    void findAllByUserName() throws Exception {
+        LinkedMultiValueMap<String, String> param = new LinkedMultiValueMap<>();
+        param.add("page", "1");
+        param.add("limit", "10");
+        param.add("direction", "ASC");
+        param.add("userName", "a");
+        mockMvc.perform(get(BASE_URL + "/findAllByUserName").params(param).headers(headers)).andExpect(status().isOk());
     }
 }

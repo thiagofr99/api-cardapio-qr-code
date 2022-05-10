@@ -10,6 +10,11 @@ import com.devthiagofurtado.cardapioqrcode.util.HeaderUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,6 +47,9 @@ public class AuthController {
     @Autowired
     JwtTokenProvider tokenProvider;
 
+    @Autowired
+    private PagedResourcesAssembler<UsuarioVO> assembler;
+
     @ApiOperation(value = "Authenticates a user and returns a token")
     @SuppressWarnings("rawtypes")
     @PostMapping(value = "/signin", produces = {"application/json", "application/xml", "application/x-yaml"},
@@ -62,10 +70,10 @@ public class AuthController {
         var token = "";
 
         if (user != null) {
-            if(user.getDateLicense() == null || user.getDateLicense().isAfter(LocalDate.now())){
+            if (user.getDateLicense() == null || user.getDateLicense().isAfter(LocalDate.now())) {
                 token = tokenProvider.createToken(username, user.getRoles());
             } else {
-                throw new ResourceBadRequestException("Data de licença expirou em "+user.getDateLicense()+", entre em  contato com o administrador do sistema.");
+                throw new ResourceBadRequestException("Data de licença expirou em " + user.getDateLicense() + ", entre em  contato com o administrador do sistema.");
             }
 
         } else {
@@ -84,8 +92,8 @@ public class AuthController {
             consumes = {"application/json", "application/xml", "application/x-yaml"})
     public ResponseEntity<UsuarioVO> salvarUsuario(@RequestBody UsuarioVO user) {
         String token = HeaderUtil.obterToken();
-        String userName = tokenProvider.getUsername(token.substring(7, token.length()));
-        return new ResponseEntity<>(userService.salvar(user, userName), HttpStatus.CREATED);
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        return new ResponseEntity<>(userService.salvar(user, userAdmin), HttpStatus.CREATED);
 
     }
 
@@ -93,8 +101,8 @@ public class AuthController {
     @GetMapping(value = "/{id}", produces = {"application/json", "application/xml", "application/x-yaml"})
     public UsuarioVO buscarPorId(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
-        String userName = tokenProvider.getUsername(token.substring(7, token.length()));
-        UsuarioVO personVO = userService.findById(id, userName);
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        UsuarioVO personVO = userService.findById(id, userAdmin);
         personVO.add(linkTo(methodOn(AuthController.class).buscarPorId(id)).withSelfRel());
         return personVO;
     }
@@ -103,11 +111,31 @@ public class AuthController {
     @PatchMapping("/{id}")
     public ResponseEntity<UsuarioVO> habilitarLicencaTrintaDias(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
-        String userName = tokenProvider.getUsername(token.substring(7, token.length()));
-        userService.habilitarLicencaTrintaDias(id, userName);
-        UsuarioVO vo = userService.findById(id, userName);
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        userService.habilitarLicencaTrintaDias(id, userAdmin);
+        UsuarioVO vo = userService.findById(id, userAdmin);
         vo.add(linkTo(methodOn(AuthController.class).buscarPorId(vo.getKey())).withSelfRel());
         return new ResponseEntity<>(vo, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Busca todos registros de Person por FirstName")
+    @GetMapping(value = {"/findAllByUserName"}, produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<?> buscarTodosPorUserName(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                    @RequestParam(value = "limit", defaultValue = "12") int limit,
+                                                    @RequestParam(value = "direction", defaultValue = "ASC") String direction,
+                                                    @RequestParam(value = "userName", defaultValue = "") String userName
+
+    ) {
+        String token = HeaderUtil.obterToken();
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "userName"));
+        Page<UsuarioVO> usuarioVOS = userService.findAllByUserName(userName, pageable, userAdmin);
+        usuarioVOS.forEach(p -> {
+            p.add(linkTo(methodOn(AuthController.class).buscarPorId(p.getKey())).withSelfRel());
+        });
+        return new ResponseEntity<>(assembler.toResource(usuarioVOS), HttpStatus.OK);
     }
 }
 

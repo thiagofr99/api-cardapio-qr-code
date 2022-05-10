@@ -8,6 +8,8 @@ import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import com.devthiagofurtado.cardapioqrcode.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -68,11 +70,11 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-    public void habilitarLicencaTrintaDias(Long id, String token) {
-        validarUsuarioAdmin(token);
+    public void habilitarLicencaTrintaDias(Long id, String userName) {
+        validarUsuarioAdmin(userName);
 
         var user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuário não localizado!"));
-        var isAtivo = user.getDateLicense().isAfter(LocalDate.now());
+        var isAtivo = user.getDateLicense() == null || user.getDateLicense().isAfter(LocalDate.now());
 
         if (isAtivo)
             throw new ResourceBadRequestException("Usuário com licença válida, não possível habilitar nova licença.");
@@ -82,6 +84,18 @@ public class UserService implements UserDetailsService {
         user.setAccountNonExpired(true);
         user.setAccountNonLocked(true);
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public Page<UsuarioVO> findAllByUserName(String userName, Pageable pageable, String userAdmin) {
+        validarUsuarioAdmin(userAdmin);
+        var page = userRepository.findAllByUserName(userName, pageable);
+
+        return page.map(this::convertToUsuarioVO);
+    }
+
+    private UsuarioVO convertToUsuarioVO(User user) {
+        return DozerConverter.parseUsertoVO(user);
     }
 
 }
