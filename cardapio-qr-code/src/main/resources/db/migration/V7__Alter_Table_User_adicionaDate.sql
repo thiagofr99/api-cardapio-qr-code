@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `date_license` date DEFAULT NULL
