@@ -54,7 +54,6 @@ public class UserService implements UserDetailsService {
 
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public void validarUsuarioAdmin(String userName) {
         List<Permission> permissions = findByUserName(userName).getPermissions();
         if (permissions.stream().noneMatch(p -> p.getDescription().equals(PermissionVO.ADMIN.name()))) {
@@ -100,16 +99,15 @@ public class UserService implements UserDetailsService {
         return DozerConverter.parseUsertoVO(user);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public void validarUsuarioAdminGerente(String userName, Empresa empresa) {
         User user = findByUserName(userName);
-        if (user.getPermissions().stream().noneMatch(p -> p.getDescription().equals(PermissionVO.ADMIN.name()))) {
-            if (user.getPermissions().stream().anyMatch(p -> p.getDescription().equals(PermissionVO.MANAGER.name()))) {
-                if (empresa.getUser() == null || empresa.getUser().getId().compareTo(user.getId()) > 0) {
-                    throw new ResourceBadRequestException("Apenas usuário ADMIN ou o Gerente da referida empresa podem executar a solicitação.");
-                }
+        if (user.getPermissions().stream().anyMatch(p -> p.getDescription().equals(PermissionVO.COMMON_USER.name())) ||
+                (user.getPermissions().stream().noneMatch(p -> p.getDescription().equals(PermissionVO.ADMIN.name())) &&
+                        (user.getPermissions().stream().anyMatch(p -> p.getDescription().equals(PermissionVO.MANAGER.name())) &&
+                                (empresa.getUser() == null || empresa.getUser().getId().compareTo(user.getId()) > 0)))) {
 
-            }
+            throw new ResourceBadRequestException("Apenas usuário ADMIN ou o Gerente da referida empresa podem executar a solicitação.");
+
         }
     }
 }

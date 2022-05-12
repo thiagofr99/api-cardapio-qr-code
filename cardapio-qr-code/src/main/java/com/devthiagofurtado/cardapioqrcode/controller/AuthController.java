@@ -21,7 +21,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -77,7 +76,7 @@ public class AuthController {
             }
 
         } else {
-            throw new UsernameNotFoundException("Username " + username + " not found!");
+            throw new ResourceBadRequestException("Erro ao tentar conexão.");
         }
 
         Map<Object, Object> model = new HashMap<>();
@@ -132,9 +131,9 @@ public class AuthController {
 
         Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "userName"));
         Page<UsuarioVO> usuarioVOS = userService.findAllByUserName(userName, pageable, userAdmin);
-        usuarioVOS.forEach(p -> {
-            p.add(linkTo(methodOn(AuthController.class).buscarPorId(p.getKey())).withSelfRel());
-        });
+        usuarioVOS.forEach(p ->
+            p.add(linkTo(methodOn(AuthController.class).buscarPorId(p.getKey())).withSelfRel())
+        );
         return new ResponseEntity<>(assembler.toResource(usuarioVOS), HttpStatus.OK);
     }
 }

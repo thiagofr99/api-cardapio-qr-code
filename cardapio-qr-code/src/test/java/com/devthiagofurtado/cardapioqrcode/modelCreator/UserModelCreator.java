@@ -4,7 +4,7 @@ import com.devthiagofurtado.cardapioqrcode.data.model.Permission;
 import com.devthiagofurtado.cardapioqrcode.data.model.User;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
-import com.devthiagofurtado.cardapioqrcode.modelCreator.jsonTest.UsuarioVOJsonTest;
+import com.devthiagofurtado.cardapioqrcode.modelCreator.jsonTest.UsuarioVOJson;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -91,9 +91,9 @@ public class UserModelCreator {
         };
     }
 
-    public static UsuarioVOJsonTest jsonTest(UsuarioVO user){
+    public static UsuarioVOJson jsonTest(UsuarioVO user){
 
-        return UsuarioVOJsonTest.builder()
+        return UsuarioVOJson.builder()
                 .key(user.getKey())
                 .userName(user.getUserName())
                 .enabled(user.getEnabled())

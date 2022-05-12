@@ -4,6 +4,7 @@ import com.devthiagofurtado.cardapioqrcode.data.model.User;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
+import com.devthiagofurtado.cardapioqrcode.modelCreator.EmpresaModelCreator;
 import com.devthiagofurtado.cardapioqrcode.modelCreator.UserModelCreator;
 import com.devthiagofurtado.cardapioqrcode.repository.UserRepository;
 import org.assertj.core.api.Assertions;
@@ -99,7 +100,9 @@ class UserServiceTest {
         BDDMockito.when(userRepository.findByUsername(ArgumentMatchers.anyString()))
                 .thenReturn(UserModelCreator.cadastrado(null, UserModelCreator.permissions(PermissionVO.COMMON_USER), true));
 
-        Assertions.assertThatThrownBy(() -> userService.salvar(UserModelCreator.vo(permissions, true, false), "teste"))
+        var user = UserModelCreator.vo(permissions, true, false);
+
+        Assertions.assertThatThrownBy(() -> userService.salvar(user, "teste"))
                 .isInstanceOf(ResourceBadRequestException.class);
     }
 
@@ -120,7 +123,9 @@ class UserServiceTest {
         BDDMockito.when(userRepository.findByUsername(ArgumentMatchers.anyString()))
                 .thenReturn(UserModelCreator.cadastrado(null, UserModelCreator.permissions(PermissionVO.COMMON_USER), true));
 
-        Assertions.assertThatThrownBy(() -> userService.salvar(UserModelCreator.vo(permissions, true, false), "teste"))
+        var user = UserModelCreator.vo(permissions, true, false);
+
+        Assertions.assertThatThrownBy(() -> userService.salvar(user, "teste"))
                 .isInstanceOf(ResourceBadRequestException.class);
     }
 
@@ -132,7 +137,11 @@ class UserServiceTest {
         BDDMockito.when(userRepository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Optional.of(UserModelCreator.cadastrado(LocalDate.now().minusDays(10), UserModelCreator.permissions(PermissionVO.ADMIN), false)));
 
+        var user = userRepository.findById(1L);
+
         userService.habilitarLicencaTrintaDias(1L, "teste");
+
+        Assertions.assertThat(user.get().getDateLicense()).isAfter(LocalDate.now());
 
     }
 
@@ -174,5 +183,54 @@ class UserServiceTest {
 
         Assertions.assertThatThrownBy(() -> userService.findAllByUserName("", pageable, "teste"))
                 .isInstanceOf(ResourceBadRequestException.class);
+    }
+
+    @Test
+    void validarUsuarioAdminGerente_sucesso() {
+        BDDMockito.when(userRepository.findByUsername(ArgumentMatchers.anyString()))
+                .thenReturn(UserModelCreator.cadastrado(null,UserModelCreator.permissions(PermissionVO.ADMIN),true));
+
+        var user = userRepository.findByUsername("teste");
+
+        userService.validarUsuarioAdminGerente("teste", EmpresaModelCreator.cadastrado(null,true));
+
+        Assertions.assertThat(user.getPermissions().get(0)).isEqualTo(UserModelCreator.permissions(PermissionVO.ADMIN).get(0));
+
+    }
+
+    @Test
+    void validarUsuarioAdminGerente_sucessoGerente() {
+        BDDMockito.when(userRepository.findByUsername(ArgumentMatchers.anyString()))
+                .thenReturn(UserModelCreator.cadastrado(null,UserModelCreator.permissions(PermissionVO.MANAGER),true));
+
+        var user = userRepository.findByUsername("teste");
+
+        userService.validarUsuarioAdminGerente("teste", EmpresaModelCreator.cadastrado(UserModelCreator.cadastrado(null,UserModelCreator.permissions(PermissionVO.MANAGER),true),true));
+
+        Assertions.assertThat(user.getPermissions().get(0)).isEqualTo(UserModelCreator.permissions(PermissionVO.MANAGER).get(0));
+    }
+
+    @Test
+    void validarUsuarioAdminGerente_retornaResourceBadRequestException_erroCommonUser() {
+        BDDMockito.when(userRepository.findByUsername(ArgumentMatchers.anyString()))
+                .thenReturn(UserModelCreator.cadastrado(LocalDate.now(),UserModelCreator.permissions(PermissionVO.COMMON_USER),true));
+
+        var empresa = EmpresaModelCreator.cadastrado(null,true);
+
+        Assertions.assertThatThrownBy(()-> userService.validarUsuarioAdminGerente("teste", empresa))
+                .isInstanceOf(ResourceBadRequestException.class);
+
+    }
+
+    @Test
+    void validarUsuarioAdminGerente_retornaResourceBadRequestException_erroMannagerNaoVinculado() {
+        BDDMockito.when(userRepository.findByUsername(ArgumentMatchers.anyString()))
+                .thenReturn(UserModelCreator.cadastrado(LocalDate.now(),UserModelCreator.permissions(PermissionVO.MANAGER),true));
+
+        var empresa = EmpresaModelCreator.cadastrado(null,true);
+
+        Assertions.assertThatThrownBy(()-> userService.validarUsuarioAdminGerente("teste", empresa))
+                .isInstanceOf(ResourceBadRequestException.class);
+
     }
 }

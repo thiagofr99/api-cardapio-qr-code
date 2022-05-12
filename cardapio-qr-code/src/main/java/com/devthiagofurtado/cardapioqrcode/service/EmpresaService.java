@@ -10,7 +10,6 @@ import com.devthiagofurtado.cardapioqrcode.repository.EmpresaRepository;
 import com.devthiagofurtado.cardapioqrcode.util.MensagemCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,7 +97,7 @@ public class EmpresaService {
     @Transactional
     public MensagemCustom deletar(Long id, String userAdmin) {
         userService.validarUsuarioAdmin(userAdmin);
-        var empresa = empresaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Empresa não localizada por Id."));
+        var empresa = findByIdEntity(id);
 
         empresaRepository.delete(empresa);
         return new MensagemCustom("Registro de empresa excluído com sucesso.", LocalDate.now());
@@ -107,7 +106,7 @@ public class EmpresaService {
     @Transactional(propagation = Propagation.REQUIRED)
     public MensagemCustom desabilitarEmpresa(Long id, String userAdmin) {
         userService.validarUsuarioAdmin(userAdmin);
-        var empresa = empresaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Empresa não localizada por Id."));
+        var empresa = findByIdEntity(id);
         empresa.setEnabled(false);
         empresa.setDataAtualizacao(LocalDate.now());
         empresaRepository.save(empresa);
@@ -116,11 +115,15 @@ public class EmpresaService {
     }
 
     private Empresa verificaEmpresa(Long idEmpresa) {
-        var empresa = empresaRepository.findById(idEmpresa).orElseThrow(() -> new ResourceNotFoundException("Empresa não localizada por Id."));
-        if (!empresa.getEnabled()) {
+        var empresa = findByIdEntity(idEmpresa);
+        if (empresa.getEmpresaNome()!=null && !empresa.getEnabled()) {
             throw new ResourceBadRequestException("Empresa desativada, não é possível concluir operação.");
         }
 
         return empresa;
+    }
+
+    private Empresa findByIdEntity(Long id) {
+        return empresaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Empresa não localizada por Id."));
     }
 }

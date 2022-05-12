@@ -70,7 +70,9 @@ class EmpresaServiceTest {
     @Test
     void atualizar_retornaEmpresaVO_sucesso() {
 
-        var teste = empresaService.atualizar(EmpresaModelCreator.vo(1L), "teste");
+        var empresaVO =EmpresaModelCreator.vo(1L);
+
+        var teste = empresaService.atualizar( empresaVO, "teste");
 
         Assertions.assertThat(teste).isNotNull();
         Assertions.assertThat(teste.getKey()).isNotNull();
@@ -81,7 +83,9 @@ class EmpresaServiceTest {
         BDDMockito.when(empresaRepository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> empresaService.atualizar(EmpresaModelCreator.vo(1L), "teste"))
+        var empresaVO =EmpresaModelCreator.vo(1L);
+
+        Assertions.assertThatThrownBy(() -> empresaService.atualizar(empresaVO , "teste"))
                 .isInstanceOf(ResourceNotFoundException.class);
 
 
@@ -92,7 +96,9 @@ class EmpresaServiceTest {
         BDDMockito.when(empresaRepository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Optional.of(EmpresaModelCreator.cadastrado(null, false)));
 
-        Assertions.assertThatThrownBy(() -> empresaService.atualizar(EmpresaModelCreator.vo(1L), "teste"))
+        var empresa = EmpresaModelCreator.vo(1L);
+
+        Assertions.assertThatThrownBy(() -> empresaService.atualizar(empresa , "teste"))
                 .isInstanceOf(ResourceBadRequestException.class);
 
 
@@ -134,8 +140,11 @@ class EmpresaServiceTest {
         BDDMockito.when(userService.findByUserName(ArgumentMatchers.anyString()))
                 .thenReturn(UserModelCreator.cadastrado(LocalDate.now().plusDays(10), UserModelCreator.permissions(PermissionVO.MANAGER), true));
 
+        var empresa = empresaRepository.findById(1L);
+
         empresaService.habilitarGerenteEmpresa(1L, "teste", "gerente");
 
+        Assertions.assertThat(empresa.get().getUser().getUserName()).isEqualTo("teste");
     }
 
     @Test

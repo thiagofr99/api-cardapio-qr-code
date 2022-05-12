@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UsuarioVOJsonTest {
+public class UsuarioVOJson {
 
     @Mapping("id")
     @JsonProperty("id")

@@ -105,9 +105,9 @@ public class EmpresaController {
 
         Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "empresaNome"));
         Page<EmpresaVO> empresaVOS = empresaService.findAllByEmpresaName(empresaName, pageable, userAdmin);
-        empresaVOS.forEach(p -> {
-            p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel());
-        });
+        empresaVOS.forEach(p ->
+            p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel())
+        );
         return new ResponseEntity<>(assembler.toResource(empresaVOS), HttpStatus.OK);
     }
 
