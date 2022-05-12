@@ -1,6 +1,7 @@
 package com.devthiagofurtado.cardapioqrcode.service;
 
 import com.devthiagofurtado.cardapioqrcode.converter.DozerConverter;
+import com.devthiagofurtado.cardapioqrcode.data.model.Empresa;
 import com.devthiagofurtado.cardapioqrcode.data.model.Permission;
 import com.devthiagofurtado.cardapioqrcode.data.model.User;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
@@ -53,7 +54,8 @@ public class UserService implements UserDetailsService {
 
     }
 
-    private void validarUsuarioAdmin(String userName) {
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public void validarUsuarioAdmin(String userName) {
         List<Permission> permissions = findByUserName(userName).getPermissions();
         if (permissions.stream().noneMatch(p -> p.getDescription().equals(PermissionVO.ADMIN.name()))) {
             throw new ResourceBadRequestException("Apenas usuário Admin pode executar a ação.");
@@ -98,4 +100,16 @@ public class UserService implements UserDetailsService {
         return DozerConverter.parseUsertoVO(user);
     }
 
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public void validarUsuarioAdminGerente(String userName, Empresa empresa) {
+        User user = findByUserName(userName);
+        if (user.getPermissions().stream().noneMatch(p -> p.getDescription().equals(PermissionVO.ADMIN.name()))) {
+            if (user.getPermissions().stream().anyMatch(p -> p.getDescription().equals(PermissionVO.MANAGER.name()))) {
+                if (empresa.getUser() == null || empresa.getUser().getId().compareTo(user.getId()) > 0) {
+                    throw new ResourceBadRequestException("Apenas usuário ADMIN ou o Gerente da referida empresa podem executar a solicitação.");
+                }
+
+            }
+        }
+    }
 }

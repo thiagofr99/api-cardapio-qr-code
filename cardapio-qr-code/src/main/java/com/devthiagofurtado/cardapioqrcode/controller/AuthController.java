@@ -87,7 +87,7 @@ public class AuthController {
 
     }
 
-    @ApiOperation(value = "Saves a user and returns a VO")
+    @ApiOperation(value = "Saves user and returns a VO if user's permission is admin")
     @PostMapping(value = "/salvar", produces = {"application/json", "application/xml", "application/x-yaml"},
             consumes = {"application/json", "application/xml", "application/x-yaml"})
     public ResponseEntity<UsuarioVO> salvarUsuario(@RequestBody UsuarioVO user) {
@@ -97,7 +97,7 @@ public class AuthController {
 
     }
 
-    @ApiOperation(value = "Buscar User por Id.")
+    @ApiOperation(value = "Find user by Id and return a VO if user's permission is admin.")
     @GetMapping(value = "/{id}", produces = {"application/json", "application/xml", "application/x-yaml"})
     public UsuarioVO buscarPorId(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
@@ -107,7 +107,7 @@ public class AuthController {
         return personVO;
     }
 
-    @ApiOperation(value = "Habilita um usuário por 30 dias.")
+    @ApiOperation(value = "User Admin Generates a 30 day license for another user by Id.")
     @PatchMapping("/{id}")
     public ResponseEntity<UsuarioVO> habilitarLicencaTrintaDias(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
@@ -118,7 +118,7 @@ public class AuthController {
         return new ResponseEntity<>(vo, HttpStatus.OK);
     }
 
-    @ApiOperation(value = "Busca todos registros de Person por FirstName")
+    @ApiOperation(value = "Find all User's by userName if user's permission is admin")
     @GetMapping(value = {"/findAllByUserName"}, produces = {"application/json", "application/xml", "application/x-yaml"})
     public ResponseEntity<?> buscarTodosPorUserName(@RequestParam(value = "page", defaultValue = "0") int page,
                                                     @RequestParam(value = "limit", defaultValue = "12") int limit,

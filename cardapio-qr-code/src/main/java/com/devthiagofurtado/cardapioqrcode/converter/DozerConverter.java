@@ -76,4 +76,5 @@ public class DozerConverter {
         permission.setDescription(vo.name());
         return permission;
     }
+
 }
