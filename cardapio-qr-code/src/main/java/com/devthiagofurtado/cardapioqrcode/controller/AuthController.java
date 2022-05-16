@@ -1,6 +1,7 @@
 package com.devthiagofurtado.cardapioqrcode.controller;
 
 
+import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import com.devthiagofurtado.cardapioqrcode.security.AccountCredentialsVO;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -82,6 +84,7 @@ public class AuthController {
         Map<Object, Object> model = new HashMap<>();
         model.put("username", username);
         model.put("token", token);
+        model.put("permission", user.getPermissions().get(0));
         return ok(model);
 
     }
@@ -107,7 +110,7 @@ public class AuthController {
     }
 
     @ApiOperation(value = "User Admin Generates a 30 day license for another user by Id.")
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<UsuarioVO> habilitarLicencaTrintaDias(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
@@ -132,9 +135,16 @@ public class AuthController {
         Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "userName"));
         Page<UsuarioVO> usuarioVOS = userService.findAllByUserName(userName, pageable, userAdmin);
         usuarioVOS.forEach(p ->
-            p.add(linkTo(methodOn(AuthController.class).buscarPorId(p.getKey())).withSelfRel())
+            p.add(linkTo(methodOn(AuthController.class).habilitarLicencaTrintaDias(p.getKey())).withSelfRel())
+
         );
         return new ResponseEntity<>(assembler.toResource(usuarioVOS), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Find Permissions.")
+    @GetMapping(value = "/permissions", produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<List<PermissionVO>> buscarPorId() {
+        return new ResponseEntity<>(PermissionVO.listarPermissions(), HttpStatus.OK);
     }
 }
 

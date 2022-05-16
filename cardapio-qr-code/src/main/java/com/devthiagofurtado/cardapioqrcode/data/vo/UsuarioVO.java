@@ -5,6 +5,7 @@ import com.github.dozermapper.core.Mapping;
 import lombok.*;
 import org.springframework.hateoas.ResourceSupport;
 
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,14 +23,20 @@ public class UsuarioVO extends ResourceSupport implements Serializable {
     @JsonProperty("id")
     private Long key;
 
+    @NotEmpty
     private String userName;
 
+    @NotEmpty
     private String fullName;
 
+    @NotEmpty
     private String password;
 
     private Boolean enabled;
 
+    @NotEmpty
     private List<PermissionVO> permissions;
+
+    private LocalDate dateLicense;
 
 }

@@ -3,6 +3,8 @@ package com.devthiagofurtado.cardapioqrcode.data.vo;
 import com.devthiagofurtado.cardapioqrcode.util.EnumSerializerCustom;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @JsonSerialize(using = EnumSerializerCustom.class)
@@ -37,6 +39,11 @@ public enum PermissionVO {
             }
         }
         return v;
+    }
+
+    public static List<PermissionVO> listarPermissions() {
+
+        return Arrays.asList(PermissionVO.values());
     }
 
 }

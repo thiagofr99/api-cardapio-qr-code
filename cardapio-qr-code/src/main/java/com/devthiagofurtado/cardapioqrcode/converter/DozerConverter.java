@@ -66,6 +66,7 @@ public class DozerConverter {
                                 p-> PermissionVO.retornar(p.getId().intValue())
                         ).collect(Collectors.toList())
                 )
+                .dateLicense(user.getDateLicense()==null?null:user.getDateLicense())
                 .enabled(true)
                 .build();
     }

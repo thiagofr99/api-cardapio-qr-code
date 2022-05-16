@@ -2,6 +2,7 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 
 
 import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaVO;
+import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.EmpresaService;
 import com.devthiagofurtado.cardapioqrcode.util.HeaderUtil;
@@ -17,6 +18,8 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;

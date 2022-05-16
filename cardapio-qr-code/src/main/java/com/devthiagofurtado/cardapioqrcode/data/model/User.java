@@ -5,6 +5,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,12 +26,15 @@ public class User implements UserDetails, Serializable {
     @Column(name = "id")
     private Long id;
 
+    @NotBlank
     @Column(name = "user_name", unique = true)
     private String userName;
 
+    @NotBlank
     @Column(name = "full_name")
     private String fullName;
 
+    @NotBlank
     @Column(name = "password")
     private String password;
 
