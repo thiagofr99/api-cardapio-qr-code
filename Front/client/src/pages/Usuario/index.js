@@ -15,15 +15,15 @@ export default function Usuario(){
     const [permissionsReturn, setPermissionsReturn] = useState([]);
     const [permissionsResponse, setPermissionsResponse] =useState([]);
 
-    const [userName, setUsername] = useState();
-    const [fullName, setFullName] = useState();
-    const [password, setPassword] = useState();    
+    const [userName, setUsername] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [password, setPassword] = useState('');    
 
     
     const [users, setUsers] = useState([]);
 
     
-    const [userParams, setUserParams] =  useState();    
+    const [userParams, setUserParams] =  useState('');    
     
     
     const accessToken = sessionStorage.getItem('accessToken');
@@ -65,7 +65,12 @@ export default function Usuario(){
             }
           });
             
-          alert('Salvo com sucesso.')          
+          alert('Salvo com sucesso.')
+
+        setFullName('');
+        setPassword('');
+        setUsername('');
+        setPermissionsResponse([]);          
     
         } catch (err){
           alert('Erro ao salvar registro!')
@@ -93,9 +98,10 @@ export default function Usuario(){
             }).then(responses=> {
                 setUsers(responses.data._embedded.usuarioVoes)
             })
-            
+                        
               
             alert('Busca realizada com sucesso.')          
+            
       
           } catch (err){
             alert('Erro ao buscar registros!'+err)
@@ -108,7 +114,7 @@ export default function Usuario(){
         
         try{
             
-            await api.put(`auth/${id}`,{
+            await api.patch(`auth/${id}`,{
                 headers:{
                     Authorization: `Bearer ${accessToken}`
                 }
@@ -132,7 +138,7 @@ export default function Usuario(){
                 <nav>
                     <ul>
                         <li>
-                            <Link to="/usuario"> 
+                            <Link className="active" to="/usuario"> 
                                 Usuarios
                             </Link>     
                             </li>
@@ -150,19 +156,7 @@ export default function Usuario(){
                     
                 </nav>
             </header>
-            <body>
-                <div id="consulta-1">
-                    <div className="row-1">
-                        <h2 className="text-consulta">CONSULTA DE USUÁRIO POR ID.</h2>
-                        
-                    </div>
-                    <div className="row-2">
-                        <form className="consulta-1">
-                            <input className="input-1" type="text" name="id" id="" placeholder="Digíte o ID a ser consultado."/>
-                            <input className="input-2" type="button" value="Consultar" />
-                        </form>
-                    </div>
-                </div>
+            <body>                
                 <div id="consulta-1">
                     <div className="row-1">
                         <h2 className="text-consulta">CONSULTA TODOS OS USUÁRIO POR NOME.</h2>
@@ -189,8 +183,8 @@ export default function Usuario(){
                     <tr>
                         <td> {p.userName} </td>
                         <td> {p.fullName} </td>
-                        <td>{p.permissions.descricao}</td>
-                        <td>{p.dateLicense}</td>
+                        <td>{p.permissions.at(0).descricao}</td>
+                        <td>{ p.dateLicense===null ? 'Licença Permanente': p.dateLicense }</td>
                         <td><button onClick={()=> renovar(p.id)} className="input-button-3" type="submit" >Renovar</button></td>
                     </tr>                 
                                 ))}

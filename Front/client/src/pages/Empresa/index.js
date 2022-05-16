@@ -1,5 +1,6 @@
 import React,{useState, useEffect} from "react";
 import { Link, useHistory} from "react-router-dom";
+import InputMask from "react-input-mask";
 
 import './style.css';
 
@@ -15,15 +16,16 @@ export default function Empresa(){
     const [permissionsReturn, setPermissionsReturn] = useState([]);
     const [permissionsResponse, setPermissionsResponse] =useState([]);
 
-    const [userName, setUsername] = useState();
-    const [fullName, setFullName] = useState();
-    const [password, setPassword] = useState();    
+    const [empresaNome, setEmpresaNome] = useState('');
+    const [cepMask, setCepMask] = useState('');
+    const [numero, setNumero] = useState('');    
+    const [complemento, setComplemento] = useState('');
 
     
     const [empresas, setEmpresas] = useState([]);
 
     
-    const [userParams, setUserParams] =  useState();        
+    const [empresaParams, setEmpresaParams] =  useState('');        
 
     const accessToken = sessionStorage.getItem('accessToken');
     
@@ -37,25 +39,28 @@ export default function Empresa(){
     async function salvar(e){
         e.preventDefault();
 
-        var permissions = [permissionsResponse];
+        var cep = cepMask.replace('-','');
     
         const data = {
-            userName,
-            fullName,
-            password,
-            permissions
+            empresaNome,
+            cep,
+            complemento,
+            numero
         }
     
         try{
     
-          const response = await api.post('auth/salvar',data,{
+          await api.post('api/empresa/v1/salvar',data,{
             headers:{
                 Authorization: `Bearer ${accessToken}`
             }
           });
             
           alert('Salvo com sucesso.')          
-    
+          setEmpresaNome('');
+          setCepMask('');
+          setComplemento('')
+          setNumero('');
         } catch (err){
           alert('Erro ao salvar registro!')
         }
@@ -66,7 +71,7 @@ export default function Empresa(){
         e.preventDefault();
 
         var paramers = new URLSearchParams();
-        paramers.append("empresaName", userParams);
+        paramers.append("empresaName", empresaParams);
         //paramers.append("page", 0);
         //paramers.append("limit", 5);
         //paramers.append("direction", 'ASC');
@@ -125,7 +130,7 @@ export default function Empresa(){
                                 Usuarios
                             </Link>     
                             </li>
-                            <li> <Link to="/empresa"> 
+                            <li> <Link className="active" to="/empresa"> 
                                 Empresas
                             </Link>     
                         </li>               
@@ -139,19 +144,7 @@ export default function Empresa(){
                     
                 </nav>
             </header>
-            <body>
-                <div id="consulta-1">
-                    <div className="row-1">
-                        <h2 className="text-consulta">CONSULTA DE USUÁRIO POR ID.</h2>
-                        
-                    </div>
-                    <div className="row-2">
-                        <form className="consulta-1">
-                            <input className="input-1" type="text" name="id" id="" placeholder="Digíte o ID a ser consultado."/>
-                            <input className="input-2" type="button" value="Consultar" />
-                        </form>
-                    </div>
-                </div>
+            <body>            
                 <div id="consulta-1">
                     <div className="row-1">
                         <h2 className="text-consulta">CONSULTA TODOS OS USUÁRIO POR NOME.</h2>
@@ -159,7 +152,7 @@ export default function Empresa(){
                     </div>
                     <div className="row-2">
                         <form className="consulta-1" onSubmit={findAllByEmpresaName}>
-                            <input className="input-1" type="text" name="id" id="" value={userParams} onChange={e => setUserParams(e.target.value)} placeholder="Digíte o nome ou parte do nome da empresa."/>
+                            <input className="input-1" type="text" name="id" id="" value={empresaParams} onChange={e => setEmpresaParams(e.target.value)} placeholder="Digíte o nome ou parte do nome da empresa."/>
                             <input className="input-2" type="submit" value="Consultar" />
                         </form>
                     </div>
@@ -195,10 +188,10 @@ export default function Empresa(){
                     </div>
                     <div className="row-2">
                         <form className="consulta-1" onSubmit={salvar}>
-                            <input className="input-3" type="text" name="nomeEmpresa" value={userName} onChange={e => setUsername(e.target.value)} placeholder="Empresa nome."/>
-                            <input className="input-3" type="text" name="cep" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="CEP."/>
-                            <input className="input-3" type="text" name="numero" value={password} onChange={e => setPassword(e.target.value)} placeholder="Numero."/>
-                            <input className="input-3" type="text" name="complemento" value={password} onChange={e => setPassword(e.target.value)} placeholder="Complemento."/>                            
+                            <input className="input-3" type="text" name="nomeEmpresa" value={empresaNome} onChange={e => setEmpresaNome(e.target.value)} placeholder="Empresa nome."/>
+                            <InputMask className="input-3" mask="99999-999" value={cepMask} onChange={e => setCepMask(e.target.value)} placeholder="CEP da empresa." />
+                            <input className="input-3" type="number" name="numero" value={numero} onChange={e => setNumero(e.target.value)} placeholder="Numero."/>
+                            <input className="input-3" type="text" name="complemento" value={complemento} onChange={e => setComplemento(e.target.value)} placeholder="Complemento."/>                            
                             <input className="input-2" type="submit" value="Salvar" />
                         </form>
                     </div>
