@@ -123,7 +123,7 @@ class AuthControllerTest {
 
     @Test
     void habilitarLicencaTrintaDias() throws Exception {
-        mockMvc.perform(put(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
+        mockMvc.perform(patch(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
     }
 
     @Test

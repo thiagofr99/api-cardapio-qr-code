@@ -33,6 +33,7 @@ public class EmpresaService {
 
         userService.validarUsuarioAdmin(userName);
         empresaVO.setDataCadastro(LocalDate.now());
+        empresaVO.setEnabled(true);
         var empresaSave = empresaRepository.save(DozerConverter.parseObject(empresaVO, Empresa.class));
         return DozerConverter.parseObject(empresaSave, EmpresaVO.class);
 

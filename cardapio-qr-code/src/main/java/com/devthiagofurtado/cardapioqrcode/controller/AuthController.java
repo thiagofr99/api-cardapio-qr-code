@@ -110,7 +110,7 @@ public class AuthController {
     }
 
     @ApiOperation(value = "User Admin Generates a 30 day license for another user by Id.")
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<UsuarioVO> habilitarLicencaTrintaDias(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));

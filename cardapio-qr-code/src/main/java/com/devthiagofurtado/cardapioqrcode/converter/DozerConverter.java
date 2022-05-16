@@ -48,7 +48,7 @@ public class DozerConverter {
         user1.setAccountNonExpired(false);
         user1.setAccountNonLocked(false);
         user1.setCredentialsNonExpired(false);
-        user1.setDateLicense(LocalDate.now());
+        user1.setDateLicense( user.getPermissions().contains(PermissionVO.ADMIN) ? null: LocalDate.now());
         user1.setPermissions(
                 user.getPermissions().stream().map(DozerConverter::permissionVOToEntity).collect(Collectors.toList())
         );
