@@ -315,7 +315,7 @@ header {
 }
 
 #lista-1 table th,td{
-    width: 20%;    
+    width: 16.5%;    
     font-size: 22px;
     text-align: center;
     padding: 10px 0;
@@ -330,6 +330,27 @@ header {
     cursor: pointer;
 }
 
+.input-button-4{
+    border-radius: 10px;
+    width: 40%;
+    align-items: center;
+    padding-left: 0px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.4s;
+}
+
+.input-button-3,.input-button-4:hover{
+    background-color: #251FC5;
+    color: #FFF;
+}
+
 table {
     border-radius: 8px;
+}
+
+li{
+    list-style-type: none;
+    display: flex;
 }

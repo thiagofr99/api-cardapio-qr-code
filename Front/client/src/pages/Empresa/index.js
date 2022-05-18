@@ -67,34 +67,13 @@ export default function Empresa(){
     
       };
 
-    async function findAllByEmpresaName(e){
-        e.preventDefault();
-
-        var paramers = new URLSearchParams();
-        paramers.append("empresaName", empresaParams);
-        //paramers.append("page", 0);
-        //paramers.append("limit", 5);
-        //paramers.append("direction", 'ASC');
-
-
-        try{
-    
-            const response = await api.get('api/empresa/v1/findAllByEmpresaName/?page=0&limit=5&ASC',{
-                params: paramers,  
-              headers:{
-                  Authorization: `Bearer ${accessToken}`
-              }
-            }).then(responses=> {
-                setEmpresas(responses.data._embedded.empresaVoes)
-            })
-            
-              
-            alert('Busca realizada com sucesso.')          
-      
-          } catch (err){
-            alert('Erro ao buscar registros!'+err)
-          }
+    async function buscarEmpresas(nome){
         
+        if(nome === undefined || nome===''){
+            history.push(`/busca/`);
+        } else {
+            history.push(`/consulta/${nome}`);
+        }
 
     }  
     
@@ -147,11 +126,11 @@ export default function Empresa(){
             <body>            
                 <div id="consulta-1">
                     <div className="row-1">
-                        <h2 className="text-consulta">CONSULTA TODOS OS USUÁRIO POR NOME.</h2>
+                        <h2 className="text-consulta">CONSULTA TODAS AS EMPRESAS POR NOME.</h2>
                         
                     </div>
                     <div className="row-2">
-                        <form className="consulta-1" onSubmit={findAllByEmpresaName}>
+                        <form className="consulta-1" onSubmit={()=>buscarEmpresas(empresaParams)}>
                             <input className="input-1" type="text" name="id" id="" value={empresaParams} onChange={e => setEmpresaParams(e.target.value)} placeholder="Digíte o nome ou parte do nome da empresa."/>
                             <input className="input-2" type="submit" value="Consultar" />
                         </form>

@@ -23,7 +23,7 @@ export default function Usuario(){
     const [users, setUsers] = useState([]);
 
     
-    const [userParams, setUserParams] =  useState('');    
+    const [nome, setNome] =  useState('');    
     
     
     const accessToken = sessionStorage.getItem('accessToken');
@@ -78,59 +78,16 @@ export default function Usuario(){
     
       };
 
-    async function findAllByUserName(e){
-        e.preventDefault();
-
-        var paramers = new URLSearchParams();
-        paramers.append("userName", userParams);
-        //paramers.append("page", 0);
-        //paramers.append("limit", 5);
-        //paramers.append("direction", 'ASC');
-
-
-        try{
-    
-            const response = await api.get('auth/findAllByUserName/?page=0&limit=5&direction=ASC',{
-                params: paramers,  
-              headers:{
-                  Authorization: `Bearer ${accessToken}`
-              }
-            }).then(responses=> {
-                setUsers(responses.data._embedded.usuarioVoes)
-            })
-                        
-              
-            alert('Busca realizada com sucesso.')          
-            
-      
-          } catch (err){
-            alert('Erro ao buscar registros!'+err)
-          }
+    async function findAllByUserName(nome){        
+        if(nome === undefined || nome===''){
+            history.push(`/todos/`);
+        } else {
+            history.push(`/consulta/${nome}`);
+        }
         
 
     }  
     
-    async function renovar(id){        
-        
-        try{
-            
-            await api.patch(`auth/${id}`,{
-                headers:{
-                    Authorization: `Bearer ${accessToken}`
-                }
-            }
-            )
-            
-              
-            alert('Renovado com sucesso!')          
-      
-          } catch (err){
-            alert('Erro ao renovar registro!'+err)
-          }
-        
-
-    }  
-
     return (
         <div id="container">
            
@@ -163,34 +120,11 @@ export default function Usuario(){
                         
                     </div>
                     <div className="row-2">
-                        <form className="consulta-1" onSubmit={findAllByUserName}>
-                            <input className="input-1" type="text" name="id" id="" value={userParams} onChange={e => setUserParams(e.target.value)} placeholder="Digíte o nome ou parte do nome do Usuário."/>
+                        <form className="consulta-1" onSubmit={()=>{findAllByUserName(nome)}}>
+                            <input className="input-1" type="text" name="id" id="" value={nome} onChange={e => setNome(e.target.value)} placeholder="Digíte o nome ou parte do nome do Usuário."/>
                             <input className="input-2" type="submit" value="Consultar" />
                         </form>
                     </div>
-                </div>
-
-                <div id="lista-1">
-                <table>
-                    <tr>
-                        <th>Nome de Usuário</th>
-                        <th>Nome completo</th>
-                        <th>Cargo</th>
-                        <th>Data Licença</th>
-                        <th>Ações</th>
-                    </tr>
-                    {users.map( p=>(
-                    <tr>
-                        <td> {p.userName} </td>
-                        <td> {p.fullName} </td>
-                        <td>{p.permissions.at(0).descricao}</td>
-                        <td>{ p.dateLicense===null ? 'Licença Permanente': p.dateLicense }</td>
-                        <td><button onClick={()=> renovar(p.id)} className="input-button-3" type="submit" >Renovar</button></td>
-                    </tr>                 
-                                ))}
-                    
-                </table>
-
                 </div>
 
                 <div id="consulta-2">
