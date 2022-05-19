@@ -70,9 +70,9 @@ export default function Empresa(){
     async function buscarEmpresas(nome){
         
         if(nome === undefined || nome===''){
-            history.push(`/busca/`);
+            history.push(`/todas/`);
         } else {
-            history.push(`/consulta/${nome}`);
+            history.push(`/buscas/${nome}`);
         }
 
     }  
@@ -135,29 +135,6 @@ export default function Empresa(){
                             <input className="input-2" type="submit" value="Consultar" />
                         </form>
                     </div>
-                </div>
-
-                <div id="lista-1">
-                <table>
-                    <tr>
-                        <th>Nome da Empresa</th>
-                        <th>CEP</th>
-                        <th>Numero</th>
-                        <th>Complemento</th>
-                        <th>Data Cadastro</th>                        
-                    </tr>
-                    {empresas.map( p=>(
-                    <tr>
-                        <td> {p.empresaNome} </td>
-                        <td> {p.cep} </td>
-                        <td> {p.numero} </td>
-                        <td> {p.complemento} </td>
-                        <td> {p.dataCadastro} </td>                        
-                    </tr>                 
-                                ))}
-                    
-                </table>
-
                 </div>
 
                 <div id="consulta-2">

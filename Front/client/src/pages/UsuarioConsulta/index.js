@@ -15,35 +15,33 @@ export default function UsuarioConsulta(){
     const {nome} = useParams();
     
     const [users, setUsers] = useState([]);
+
+    const [page, setPage] = useState(0);
+
+    //const [sizeObject, setSizeObject] = useState();
     
     const accessToken = sessionStorage.getItem('accessToken');
 
     const history = useHistory();
 
 
-    async function buscarTodosPorNome(){
-
-        var paramers = new URLSearchParams();
-        nome === undefined ? paramers.append("userName", ''): paramers.append("userName", nome);
-        
-        //paramers.append("page", 0);
-        //paramers.append("limit", 5);
-        //paramers.append("direction", 'ASC');
-
+    async function buscarTodosPorNome(pagin){
 
         try{
     
-            const response = await api.get('auth/findAllByUserName/?page=0&limit=10&direction=ASC',{
-                params: paramers,  
+            const response = await api.get('auth/findAllByUserName',{                
               headers:{
                   Authorization: `Bearer ${accessToken}`
+              },
+              params: {
+                userName:  nome === undefined ? '' :  nome,
+                page: pagin,
+                limit: 10,
+                direction: 'asc'
               }
             }).then(responses=> {
                 setUsers(responses.data._embedded.usuarioVoes)
-            })
-                        
-              
-            alert('Busca realizada com sucesso.')          
+            })                      
             
       
           } catch (err){
@@ -52,6 +50,22 @@ export default function UsuarioConsulta(){
         
 
     }  
+
+    async function proximaPage(){
+        var pagina=0;    
+        page === 0? pagina=1: pagina=page;
+        pagina = page > 0? pagina+1 : pagina;
+        setPage(pagina);
+        buscarTodosPorNome(pagina);        
+    }
+
+    async function anteriorPage(){
+        var newPage;
+        page > 0 ? newPage=page: alert('erro');  
+        newPage = newPage-1;      
+        setPage(newPage);
+        buscarTodosPorNome(newPage);        
+    }
     
     async function renovar(id){        
         
@@ -67,7 +81,8 @@ export default function UsuarioConsulta(){
               })
             
               
-            alert('Renovado com sucesso!')          
+            alert('Renovado com sucesso!')
+            buscarTodosPorNome();          
       
           } catch (err){
             alert('Erro ao renovar registro!'+err)
@@ -79,6 +94,7 @@ export default function UsuarioConsulta(){
     useEffect(()=> {
         try{
             buscarTodosPorNome();
+            alert('Busca realizada com sucesso.')
         } catch (erro){
             alert("erro:"+erro)
         }
@@ -127,14 +143,18 @@ export default function UsuarioConsulta(){
                         <td> {p.userName} </td>
                         <td> {p.fullName} </td>
                         <td>{p.permissions.at(0).descricao}</td>
-                        <td>{ p.dateLicense===null ? 'Licença Permanente': p.dateLicense }</td>
-                        <td><button onClick={()=> renovar(p.id)} className="input-button-3" type="submit" >Renovar</button></td>
+                        <td>{ p.dateLicense===null || p.dateLicense==='' ? 'Licença Permanente': p.dateLicense }</td>
+                        <td>{ p.dateLicense===null || p.dateLicense==='' || new Date(p.dateLicense) >= Date.now() ? '':<button onClick={()=> renovar(p.id)} className="input-button-3" type="submit" >Renovar</button>} </td>
                     </tr>
                                 ))}
                     
                 </table>
-
-                </div>                
+                </div>  
+                <div className="nav-page">
+                        {page===0 ? '' : <button className="button-previous" onClick={anteriorPage}>{'<<Anterior'}</button>}      
+                        <h3>{page+1}</h3> 
+                        { users.length < 9 ? '': <button className="button-next" onClick={proximaPage}>{'Próxima>>'}</button>} 
+                </div>              
 
             </body>
             <footer>

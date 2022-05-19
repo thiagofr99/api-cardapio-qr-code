@@ -8,7 +8,8 @@ import Manager from './pages/Manager';
 import UsuarioConsulta from './pages/UsuarioConsulta';
 import UsuarioTodos from './pages/UsuarioTodos';
 import EmpresaTodos from './pages/EmpresaTodos';
-
+import EmpresaBusca from './pages/EmpresaConsulta'
+import EmpresaAlterar from './pages/EmpresaAlterar';
 
 export default function Routes() {
     return (
@@ -20,7 +21,9 @@ export default function Routes() {
                 <Route path="/manager" component={Manager}/>                
                 <Route path='/consulta/:nome' component={UsuarioConsulta}/>                
                 <Route path='/todos/' component={UsuarioTodos}/>                
-                <Route path='/busca/' exact component={EmpresaTodos}/>                
+                <Route path='/todas/' exact component={EmpresaTodos}/>                
+                <Route path='/buscas/:nome' exact component={EmpresaBusca}/>                
+                <Route path='/update/:myId' exact component={EmpresaAlterar}/>                
             </Switch>
         </BrowserRouter>
     );

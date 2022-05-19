@@ -1,8 +1,9 @@
 import React,{useState, useEffect} from "react";
-import { Link, useHistory} from "react-router-dom";
+import { Link, useHistory, useParams} from "react-router-dom";
 import InputMask from "react-input-mask";
 
 import './style.css';
+
 
 import api from '../../services/api'
 
@@ -11,10 +12,9 @@ import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-ic
 
 
 
-export default function EmpresaTodos(){
+export default function EmpresaConsulta(){
 
-    const [permissionsReturn, setPermissionsReturn] = useState([]);
-    const [permissionsResponse, setPermissionsResponse] =useState([]);
+    const {nome} = useParams();
 
     const [empresaNome, setEmpresaNome] = useState('');
     const [cepMask, setCepMask] = useState('');
@@ -28,6 +28,7 @@ export default function EmpresaTodos(){
     
 
     const history = useHistory();
+    
 
     useEffect(()=> {
         findAllByEmpresaName();
@@ -41,30 +42,22 @@ export default function EmpresaTodos(){
         }
     }
 
-    async function gerenteEmpresa(id){
-        try{
-            sessionStorage.setItem('gerente', 'true');
-            history.push(`/update/${id}`)
-        } catch ( erro ){
-            alert('Edit failed! Try again.')
-        }
-    }
-
-
     async function findAllByEmpresaName(){
 
+        var paramers = new URLSearchParams();
+        nome === undefined ? paramers.append("empresaName", ''): paramers.append("empresaName", nome);
 
         try{
     
             const response = await api.get('api/empresa/v1/findAllByEmpresaName/?page=0&limit=10&ASC',{                
-              headers:{
+                params: paramers,  
+                headers:{
                   Authorization: `Bearer ${accessToken}`
               }
             }).then(responses=> {
                 setEmpresas(responses.data._embedded.empresaVoes)
             })
-            
-              
+                        
             alert('Busca realizada com sucesso.')          
       
           } catch (err){
@@ -74,29 +67,6 @@ export default function EmpresaTodos(){
 
     }  
 
-    async function deleteEmpresa(id) {
-
-        var resultado = window.confirm("Deseja excluir o item selecionado?");
-
-        if(resultado==true){
-            try {
-                await api.delete(`api/empresa/v1/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                })
-                
-                alert('Empresa deletada com sucesso!')
-                setEmpresas(empresas.filter(emp => emp.id !== id))
-            } catch (err) {
-                alert('Delete failed! Try again.');
-            }
-        }
-            
-        
-        
-    }
-    
     async function desabilitar(id){        
         
         var confirm = window.confirm("Deseja realmente desabilitar a empresa?")
@@ -122,7 +92,30 @@ export default function EmpresaTodos(){
                 alert('Erro ao renovar registro!'+err)
             }
         }
-    }  
+    }
+    
+    async function deleteEmpresa(id) {
+
+        var resultado = window.confirm("Deseja excluir o item selecionado?");
+
+        if(resultado==true){
+            try {
+                await api.delete(`api/empresa/v1/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                })
+                
+                alert('Empresa deletada com sucesso!')
+                setEmpresas(empresas.filter(emp => emp.id !== id))
+            } catch (err) {
+                alert('Delete failed! Try again.');
+            }
+        }
+            
+        
+        
+    }
 
     return (
         <div id="container">
@@ -169,7 +162,7 @@ export default function EmpresaTodos(){
                         <td> {p.dataCadastro} </td>                        
                         <td>
                             <button onClick={()=> deleteEmpresa(p.id)} className="input-button-deletar" type="submit" >Deletar</button>
-                            <button onClick={(()=> gerenteEmpresa(p.id))} className="input-button-patch" type="submit" >Gerente</button>
+                            <button onClick={""} className="input-button-patch" type="submit" >Gerente</button>
                             <button onClick={()=> editEmpresa(p.id)} className="input-button-alterar" type="submit" >Alterar</button>
                             <button onClick={()=> desabilitar(p.id)} className="input-button-patch" type="submit" >Desabilitar</button>
                         </td>
