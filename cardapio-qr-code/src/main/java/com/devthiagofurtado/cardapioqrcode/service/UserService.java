@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -93,6 +94,14 @@ public class UserService implements UserDetailsService {
         var page = userRepository.findAllByUserName(userName, pageable);
 
         return page.map(this::convertToUsuarioVO);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public List<UsuarioVO> findAllManangers(String userAdmin) {
+        validarUsuarioAdmin(userAdmin);
+        var list = userRepository.findAllManagers();
+
+        return list.stream().map(this::convertToUsuarioVO).collect(Collectors.toList());
     }
 
     private UsuarioVO convertToUsuarioVO(User user) {

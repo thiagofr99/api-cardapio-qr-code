@@ -146,5 +146,13 @@ public class AuthController {
     public ResponseEntity<List<PermissionVO>> buscarPorId() {
         return new ResponseEntity<>(PermissionVO.listarPermissions(), HttpStatus.OK);
     }
+
+    @ApiOperation(value = "Find all Manangers.")
+    @GetMapping(value = "/manangers", produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<List<UsuarioVO>> buscarGerentes() {
+        String token = HeaderUtil.obterToken();
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        return new ResponseEntity<>(userService.findAllManangers(userAdmin), HttpStatus.OK);
+    }
 }
 
