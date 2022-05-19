@@ -35,6 +35,7 @@ export default function EmpresaTodos(){
 
     async function editEmpresa(id){
         try{
+            sessionStorage.setItem('gerente', 'false');
             history.push(`/update/${id}`)
         } catch ( erro ){
             alert('Edit failed! Try again.')

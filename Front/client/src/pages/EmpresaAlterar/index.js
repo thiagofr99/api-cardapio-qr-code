@@ -211,7 +211,7 @@ export default function EmpresaAlterar(){
                             ))}
                         
                             </select>                            
-                            :  <input type="text" className={gerente==='true' ?"disabled-input":""}  value={"Gerente: "+userFullName} disabled={gerente==='true' ?true:false} onChange={e=>setUserFullName(e.target.value)} />    
+                            : gerente==='false' ? '' : <input type="text" className={gerente==='true' ?"disabled-input":""}  value={"Gerente: "+userFullName} disabled={gerente==='true' ?true:false} onChange={e=>setUserFullName(e.target.value)} />    
                         }
                         {gerente==='true' && userFullName==='' ? <button onClick={()=> definirGerente(mananger,myId)}>Definir</button>: ''}                           
                     </div>

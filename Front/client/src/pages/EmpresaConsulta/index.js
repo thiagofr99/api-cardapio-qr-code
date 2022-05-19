@@ -14,6 +14,7 @@ import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-ic
 
 export default function EmpresaConsulta(){
 
+
     const {nome} = useParams();
 
     const [empresaNome, setEmpresaNome] = useState('');
@@ -28,7 +29,6 @@ export default function EmpresaConsulta(){
     
 
     const history = useHistory();
-    
 
     useEffect(()=> {
         findAllByEmpresaName();
@@ -36,28 +36,45 @@ export default function EmpresaConsulta(){
 
     async function editEmpresa(id){
         try{
+            sessionStorage.setItem('gerente', 'false');
             history.push(`/update/${id}`)
         } catch ( erro ){
             alert('Edit failed! Try again.')
         }
     }
 
-    async function findAllByEmpresaName(){
+    async function gerenteEmpresa(id){
+        try{
+            sessionStorage.setItem('gerente', 'true');
+            history.push(`/update/${id}`)
+        } catch ( erro ){
+            alert('Edit failed! Try again.')
+        }
+    }
+
+
+    async function findAllByEmpresaName(pagin){
 
         var paramers = new URLSearchParams();
-        nome === undefined ? paramers.append("empresaName", ''): paramers.append("empresaName", nome);
+        nome===undefined ? paramers.append("empresaName",''):paramers.append("empresaName",nome)
 
         try{
     
-            const response = await api.get('api/empresa/v1/findAllByEmpresaName/?page=0&limit=10&ASC',{                
-                params: paramers,  
-                headers:{
+            const response = await api.get('api/empresa/v1/findAllByEmpresaName/',{                                
+              headers:{
                   Authorization: `Bearer ${accessToken}`
+              },
+              params: {
+                empresaName:  nome === undefined ? '' :  nome,
+                page: pagin,
+                limit: 10,
+                direction: 'asc'
               }
             }).then(responses=> {
                 setEmpresas(responses.data._embedded.empresaVoes)
             })
-                        
+            
+              
             alert('Busca realizada com sucesso.')          
       
           } catch (err){
@@ -67,6 +84,29 @@ export default function EmpresaConsulta(){
 
     }  
 
+    async function deleteEmpresa(id) {
+
+        var resultado = window.confirm("Deseja excluir o item selecionado?");
+
+        if(resultado==true){
+            try {
+                await api.delete(`api/empresa/v1/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                })
+                
+                alert('Empresa deletada com sucesso!')
+                setEmpresas(empresas.filter(emp => emp.id !== id))
+            } catch (err) {
+                alert('Delete failed! Try again.');
+            }
+        }
+            
+        
+        
+    }
+    
     async function desabilitar(id){        
         
         var confirm = window.confirm("Deseja realmente desabilitar a empresa?")
@@ -92,30 +132,7 @@ export default function EmpresaConsulta(){
                 alert('Erro ao renovar registro!'+err)
             }
         }
-    }
-    
-    async function deleteEmpresa(id) {
-
-        var resultado = window.confirm("Deseja excluir o item selecionado?");
-
-        if(resultado==true){
-            try {
-                await api.delete(`api/empresa/v1/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                })
-                
-                alert('Empresa deletada com sucesso!')
-                setEmpresas(empresas.filter(emp => emp.id !== id))
-            } catch (err) {
-                alert('Delete failed! Try again.');
-            }
-        }
-            
-        
-        
-    }
+    }  
 
     return (
         <div id="container">
@@ -162,7 +179,7 @@ export default function EmpresaConsulta(){
                         <td> {p.dataCadastro} </td>                        
                         <td>
                             <button onClick={()=> deleteEmpresa(p.id)} className="input-button-deletar" type="submit" >Deletar</button>
-                            <button onClick={""} className="input-button-patch" type="submit" >Gerente</button>
+                            <button onClick={(()=> gerenteEmpresa(p.id))} className="input-button-patch" type="submit" >Gerente</button>
                             <button onClick={()=> editEmpresa(p.id)} className="input-button-alterar" type="submit" >Alterar</button>
                             <button onClick={()=> desabilitar(p.id)} className="input-button-patch" type="submit" >Desabilitar</button>
                         </td>
@@ -192,6 +209,5 @@ export default function EmpresaConsulta(){
                
             </footer>
         </div>
-        
     );
 }
