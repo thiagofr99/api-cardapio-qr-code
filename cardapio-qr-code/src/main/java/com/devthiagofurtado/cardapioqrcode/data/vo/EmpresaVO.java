@@ -35,8 +35,6 @@ public class EmpresaVO extends ResourceSupport implements Serializable {
 
     private LocalDate dataAtualizacao;
 
-    private Boolean enabled;
-
     private String imageUrl;
 
 }

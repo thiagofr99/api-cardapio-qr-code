@@ -2,6 +2,7 @@ package com.devthiagofurtado.cardapioqrcode.service;
 
 import com.devthiagofurtado.cardapioqrcode.converter.DozerConverter;
 import com.devthiagofurtado.cardapioqrcode.data.model.Empresa;
+import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaDetalharVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
@@ -33,8 +34,9 @@ public class EmpresaService {
 
         userService.validarUsuarioAdmin(userName);
         empresaVO.setDataCadastro(LocalDate.now());
-        empresaVO.setEnabled(true);
-        var empresaSave = empresaRepository.save(DozerConverter.parseObject(empresaVO, Empresa.class));
+        var empresa = DozerConverter.parseObject(empresaVO, Empresa.class);
+        empresa.setEnabled(true);
+        var empresaSave = empresaRepository.save(empresa);
         return DozerConverter.parseObject(empresaSave, EmpresaVO.class);
 
     }
@@ -68,16 +70,15 @@ public class EmpresaService {
         empresa.setCep(empresaVO.getCep());
         empresa.setNumero(empresaVO.getNumero());
         empresa.setComplemento(empresaVO.getComplemento());
-        empresa.setEnabled(empresaVO.getEnabled());
     }
 
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-    public EmpresaVO findById(Long id, String userAdmin) {
+    public EmpresaDetalharVO findById(Long id, String userAdmin) {
         var empresa = empresaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Não foi localizado nenhuma empresa com esse Id."));
         this.verificaEmpresa(id);
         userService.validarUsuarioAdminGerente(userAdmin, empresa);
 
-        return DozerConverter.parseObject(empresa, EmpresaVO.class);
+        return DozerConverter.empresaToDetalharVO(empresa);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -89,6 +90,7 @@ public class EmpresaService {
 
         if (user.getPermissions().stream().anyMatch(p -> p.getDescription().equals(PermissionVO.MANAGER.name()))) {
             empresa.setUser(user);
+            empresaRepository.save(empresa);
         } else {
             throw new ResourceBadRequestException("Usuário não possuí permissão de Gerente.");
         }

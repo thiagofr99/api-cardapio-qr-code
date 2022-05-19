@@ -1,6 +1,8 @@
 package com.devthiagofurtado.cardapioqrcode.converter;
 
+import com.devthiagofurtado.cardapioqrcode.data.model.Empresa;
 import com.devthiagofurtado.cardapioqrcode.data.model.Permission;
+import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaDetalharVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.github.dozermapper.core.DozerBeanMapperBuilder;
@@ -76,6 +78,22 @@ public class DozerConverter {
         permission.setId(vo.getCodigo().longValue());
         permission.setDescription(vo.name());
         return permission;
+    }
+
+    public static EmpresaDetalharVO empresaToDetalharVO(Empresa empresa){
+        return EmpresaDetalharVO.builder()
+                .cep(empresa.getCep())
+                .complemento(empresa.getComplemento())
+                .empresaNome(empresa.getEmpresaNome())
+                .dataAtualizacao(empresa.getDataAtualizacao())
+                .dataCadastro(empresa.getDataCadastro())
+                .imageUrl(empresa.getImageUrl())
+                .numero(empresa.getNumero())
+                .key(empresa.getId())
+                .user(
+                    empresa.getUser()!=null ? DozerConverter.parseUsertoVO(empresa.getUser()): null
+                )
+                .build();
     }
 
 }

@@ -110,7 +110,7 @@ class EmpresaControllerTest {
                 .thenReturn(EmpresaModelCreator.vo(1L));
 
         BDDMockito.when(empresaService.findById(ArgumentMatchers.anyLong(),ArgumentMatchers.anyString()))
-                .thenReturn(EmpresaModelCreator.vo(1L));
+                .thenReturn(EmpresaModelCreator.detalharVo(1L));
 
         BDDMockito.when(empresaService.findAllByEmpresaName(ArgumentMatchers.anyString(), ArgumentMatchers.any(Pageable.class), ArgumentMatchers.anyString()))
                 .thenReturn(new PageImpl<>(Collections.singletonList(EmpresaModelCreator.vo(1L))));

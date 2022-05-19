@@ -1,8 +1,8 @@
 package com.devthiagofurtado.cardapioqrcode.controller;
 
 
+import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaDetalharVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaVO;
-import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.EmpresaService;
 import com.devthiagofurtado.cardapioqrcode.util.HeaderUtil;
@@ -18,8 +18,6 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -66,10 +64,10 @@ public class EmpresaController {
 
     @ApiOperation(value = "Find Empresa by Id.")
     @GetMapping(value = "/{id}", produces = {"application/json", "application/xml", "application/x-yaml"})
-    public ResponseEntity<EmpresaVO> buscarPorId(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<EmpresaDetalharVO> buscarPorId(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
-        EmpresaVO empresaVO = empresaService.findById(id, userAdmin);
+        EmpresaDetalharVO empresaVO = empresaService.findById(id, userAdmin);
         empresaVO.add(linkTo(methodOn(EmpresaController.class).buscarPorId(id)).withSelfRel());
         return new ResponseEntity<>(empresaVO, HttpStatus.OK);
     }
@@ -84,12 +82,12 @@ public class EmpresaController {
 
     @ApiOperation(value = "Enables a manager for a company.")
     @PatchMapping("/{idEmpresa}/gerente/{userGerente}")
-    public ResponseEntity<EmpresaVO> habilitarGerente(@PathVariable(value = "idEmpresa") Long idEmpresa,
-                                                      @PathVariable(value = "userGerente") String userGerente) {
+    public ResponseEntity<EmpresaDetalharVO> habilitarGerente(@PathVariable(value = "idEmpresa") Long idEmpresa,
+                                                              @PathVariable(value = "userGerente") String userGerente) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
         empresaService.habilitarGerenteEmpresa(idEmpresa, userAdmin, userGerente);
-        EmpresaVO vo = empresaService.findById(idEmpresa, userAdmin);
+        EmpresaDetalharVO vo = empresaService.findById(idEmpresa, userAdmin);
         vo.add(linkTo(methodOn(EmpresaController.class).buscarPorId(vo.getKey())).withSelfRel());
         return new ResponseEntity<>(vo, HttpStatus.OK);
     }
@@ -109,7 +107,7 @@ public class EmpresaController {
         Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "empresaNome"));
         Page<EmpresaVO> empresaVOS = empresaService.findAllByEmpresaName(empresaName, pageable, userAdmin);
         empresaVOS.forEach(p ->
-            p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel())
+                p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel())
         );
         return new ResponseEntity<>(assembler.toResource(empresaVOS), HttpStatus.OK);
     }
@@ -117,11 +115,11 @@ public class EmpresaController {
 
     @ApiOperation(value = "Deleta a company for Id.")
     @DeleteMapping("/{id}")
-    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id){
+    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
 
-        return new ResponseEntity<>(empresaService.deletar(id,userAdmin),HttpStatus.OK);
+        return new ResponseEntity<>(empresaService.deletar(id, userAdmin), HttpStatus.OK);
     }
 }
 
