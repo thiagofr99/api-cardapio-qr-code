@@ -126,7 +126,7 @@ public class EmpresaService {
         return empresa;
     }
 
-    private Empresa findByIdEntity(Long id) {
+    public Empresa findByIdEntity(Long id) {
         return empresaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Empresa não localizada por Id."));
     }
 }
