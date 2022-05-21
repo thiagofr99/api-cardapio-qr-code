@@ -13,3 +13,8 @@ Jaspersoft Studio para geração do QR Code
 React 
 
 Modelo de ramificação: Git Flow
+
+
+Na Branch main esta tudo que foi finalizado na "Sprint-1" do projeto.
+
+Atualmente trabalhando na SP2 estou aplicando as novas implementações na develop e posteriormente subirei para homolog para testes.
