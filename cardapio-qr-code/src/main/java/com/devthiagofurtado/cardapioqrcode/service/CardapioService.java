@@ -8,6 +8,8 @@ import com.devthiagofurtado.cardapioqrcode.exception.ResourceNotFoundException;
 import com.devthiagofurtado.cardapioqrcode.repository.CardapioRepository;
 import com.devthiagofurtado.cardapioqrcode.util.MensagemCustom;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +74,20 @@ public class CardapioService {
         cardapioRepository.delete(cardapio);
 
         return new MensagemCustom("Registro de cardapio excluído com sucesso.", LocalDate.now());
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public Page<CardapioVO> findAllByEmpresa(Long idEmpresa, Pageable pageable, String userAdmin) {
+        var empresa = empresaService.findByIdEntity(idEmpresa);
+        userService.validarUsuarioGerente(userAdmin, empresa);
+        var page = cardapioRepository.findAllByEmpresa(empresa, pageable);
+
+        return page.map(this::convertToCardapioVO);
+    }
+
+
+    private CardapioVO convertToCardapioVO(Cardapio cardapio) {
+        return DozerConverter.parseObject(cardapio, CardapioVO.class);
     }
 
     private Cardapio findByIdEntity(Long id) {

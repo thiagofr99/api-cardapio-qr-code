@@ -11,6 +11,10 @@ import com.devthiagofurtado.cardapioqrcode.util.MensagemCustom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +23,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 
 @Api(tags = "CardapioEndPoint")
@@ -36,7 +43,7 @@ public class CardapioController {
     JwtTokenProvider tokenProvider;
 
     @Autowired
-    private PagedResourcesAssembler<EmpresaVO> assembler;
+    private PagedResourcesAssembler<CardapioVO> assembler;
 
 
     @ApiOperation(value = "Saves a Cardapio and returns a VO")
@@ -78,6 +85,24 @@ public class CardapioController {
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
 
         return new ResponseEntity<>(cardapioService.deletar(id, userAdmin), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Find all Cardapios by Enterpryse")
+    @GetMapping(value = {"/findAllByEmpresa/{idEmpresa}"}, produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<?> buscarTodosPorEmpresa(@RequestParam(value = "page", defaultValue = "0") int page,
+                                                   @RequestParam(value = "limit", defaultValue = "12") int limit,
+                                                   @RequestParam(value = "direction", defaultValue = "ASC") String direction,
+                                                   @PathVariable(value = "idEmpresa") Long id) {
+        String token = HeaderUtil.obterToken();
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "cardapioNome"));
+        var cardapioVOS = cardapioService.findAllByEmpresa(id, pageable, userAdmin);
+//        cardapioVOS.forEach(p ->
+//                p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel())
+//        );
+        return new ResponseEntity<>(assembler.toResource(cardapioVOS), HttpStatus.OK);
     }
 }
 
