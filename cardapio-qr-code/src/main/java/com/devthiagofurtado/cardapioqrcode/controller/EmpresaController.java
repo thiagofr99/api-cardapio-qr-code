@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
@@ -70,6 +72,18 @@ public class EmpresaController {
         EmpresaDetalharVO empresaVO = empresaService.findById(id, userAdmin);
         empresaVO.add(linkTo(methodOn(EmpresaController.class).buscarPorId(id)).withSelfRel());
         return new ResponseEntity<>(empresaVO, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Find Empresas by Gerente.")
+    @GetMapping(value = "/empresas-gerente", produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<List<EmpresaVO>> buscarPorUserGerente() {
+        String token = HeaderUtil.obterToken();
+        String user = tokenProvider.getUsername(token.substring(7, token.length()));
+        var empresaVOS = empresaService.findByGerente(user);
+        empresaVOS.forEach(p ->
+                p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel())
+        );
+        return new ResponseEntity<>(empresaVOS, HttpStatus.OK);
     }
 
     @ApiOperation(value = "Disabled a company.")

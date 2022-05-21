@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class EmpresaService {
@@ -79,6 +80,17 @@ public class EmpresaService {
         userService.validarUsuarioAdminGerente(userAdmin, empresa);
 
         return DozerConverter.empresaToDetalharVO(empresa);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public List<EmpresaVO> findByGerente(String user) {
+        var manager = userService.findByUserName(user);
+        if (manager.getPermissions().stream().noneMatch(p -> p.getDescription().equals("MANAGER"))) {
+            throw new ResourceBadRequestException("Requer permissão de Gerente.");
+        }
+        var empresas = empresaRepository.findAllByGerente(manager);
+
+        return DozerConverter.parseListObjects(empresas, EmpresaVO.class);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
