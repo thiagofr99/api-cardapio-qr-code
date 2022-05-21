@@ -16,7 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +42,6 @@ public class FileController {
 
     @PostMapping("/uploadMultipleFiles")
     public List<UploadFileResponseVO> uploadFile(@RequestParam("files") MultipartFile[] files) {
-        List<UploadFileResponseVO> uploadFileResponseVOS = new ArrayList<>();
         return Arrays.stream(files).map(this::uploadFile
         ).collect(Collectors.toList());
     }

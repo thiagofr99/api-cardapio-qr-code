@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -45,6 +46,7 @@ public class Cardapio implements Serializable {
     private String urlQrcode;
 
     @ManyToOne
+    @NotNull
     @JoinColumn(name = "empresa_id")
     private Empresa empresa;
 

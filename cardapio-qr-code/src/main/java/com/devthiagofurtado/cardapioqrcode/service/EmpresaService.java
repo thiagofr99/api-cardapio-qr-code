@@ -119,7 +119,7 @@ public class EmpresaService {
 
     private Empresa verificaEmpresa(Long idEmpresa) {
         var empresa = findByIdEntity(idEmpresa);
-        if (empresa.getEmpresaNome()!=null && !empresa.getEnabled()) {
+        if (empresa.getEmpresaNome() != null && !empresa.getEnabled()) {
             throw new ResourceBadRequestException("Empresa desativada, não é possível concluir operação.");
         }
 
