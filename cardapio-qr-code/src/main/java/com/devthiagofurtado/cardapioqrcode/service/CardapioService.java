@@ -7,6 +7,7 @@ import com.devthiagofurtado.cardapioqrcode.data.vo.CardapioVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaDetalharVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
+import com.devthiagofurtado.cardapioqrcode.exception.FileStorageException;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceNotFoundException;
 import com.devthiagofurtado.cardapioqrcode.repository.CardapioRepository;
@@ -20,6 +21,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 
 @Service
@@ -106,14 +111,27 @@ public class CardapioService {
 //    }
 //
 //
-//    @Transactional
-//    public MensagemCustom deletar(Long id, String userAdmin) {
-//        userService.validarUsuarioAdmin(userAdmin);
-//        var empresa = findByIdEntity(id);
-//
-//        empresaRepository.delete(empresa);
-//        return new MensagemCustom("Registro de empresa excluído com sucesso.", LocalDate.now());
-//    }
+    @Transactional
+    public MensagemCustom deletar(Long id, String userAdmin) throws IOException {
+        var cardapio = findByIdEntity(id);
+        userService.validarUsuarioAdminGerente(userAdmin, cardapio.getEmpresa());
+
+        Path path = Path.of(cardapio.getUrlQrcode());
+
+        if(Files.notExists(path)){
+            throw new FileStorageException("Arquivo para excluir não existe.");
+        }
+
+        Files.delete(path.toAbsolutePath());
+
+        if(Files.exists(path)){
+            throw new FileStorageException("Arquivo não foi excluido.");
+        }
+
+        cardapioRepository.delete(cardapio);
+
+        return new MensagemCustom("Registro de empresa excluído com sucesso.", LocalDate.now());
+    }
 //
 //    @Transactional(propagation = Propagation.REQUIRED)
 //    public MensagemCustom desabilitarEmpresa(Long id, String userAdmin) {
@@ -135,7 +153,7 @@ public class CardapioService {
 //        return empresa;
 //    }
 //
-//    private Empresa findByIdEntity(Long id) {
-//        return empresaRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Empresa não localizada por Id."));
-//    }
+    private Cardapio findByIdEntity(Long id) {
+        return cardapioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cardapio não localizado por Id."));
+    }
 }

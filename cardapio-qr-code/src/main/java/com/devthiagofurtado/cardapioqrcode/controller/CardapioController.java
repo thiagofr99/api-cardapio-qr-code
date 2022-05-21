@@ -144,13 +144,13 @@ public class CardapioController {
 //    }
 //
 //
-//    @ApiOperation(value = "Deleta a company for Id.")
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) {
-//        String token = HeaderUtil.obterToken();
-//        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
-//
-//        return new ResponseEntity<>(empresaService.deletar(id, userAdmin), HttpStatus.OK);
-//    }
+    @ApiOperation(value = "Deleta a company for Id.")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) throws IOException {
+        String token = HeaderUtil.obterToken();
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+
+        return new ResponseEntity<>(cardapioService.deletar(id, userAdmin), HttpStatus.OK);
+    }
 }
 

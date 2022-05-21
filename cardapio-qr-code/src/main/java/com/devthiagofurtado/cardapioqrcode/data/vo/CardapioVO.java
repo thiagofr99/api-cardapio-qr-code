@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonPropertyOrder({"id", "empresaNome", "cep", "numero", "complemento", "dataCadastro", "dataAtualizacao", "enabled", "imageUrl"})
+@JsonPropertyOrder({"id", "cardapioNome", "dataCadastro", "dataAtualizacao", "upload", "urlCardapio", "empresaId"})
 public class CardapioVO extends ResourceSupport implements Serializable {
 
     private static final long serialVersionUID = 1L;
