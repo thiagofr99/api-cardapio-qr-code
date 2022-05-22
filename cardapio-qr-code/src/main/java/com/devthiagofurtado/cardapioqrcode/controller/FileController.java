@@ -27,6 +27,8 @@ public class FileController {
 
     private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 
+    private static String URL_CAMINHO =  "C:\\Users\\thiag\\Documents\\Meu Projeto\\upload\\";
+
     @Autowired
     private FileStorageService fileStorageService;
 
@@ -37,7 +39,13 @@ public class FileController {
                 .path("/api/file/v1/downloadFile/")
                 .path(fileName)
                 .toUriString();
-        return new UploadFileResponseVO(fileName, fileDownloadUri, file.getContentType(), file.getSize());
+        return UploadFileResponseVO.builder()
+                .fileName(fileName)
+                .fileDownloadUri(fileDownloadUri)
+                .fileType(file.getContentType())
+                .size(file.getSize())
+                .fileUrl(URL_CAMINHO.concat(fileName))
+                .build();
     }
 
     @PostMapping("/uploadMultipleFiles")

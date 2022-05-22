@@ -1,5 +1,6 @@
 import React,{useState, useEffect} from "react";
 import { Link, useHistory} from "react-router-dom";
+import FileDownload from "js-file-download";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
@@ -13,6 +14,14 @@ export default function Manager(){
     const [empresaResponse, setEmpresaResponse] = useState();
     const [empresas, setEmpresas] = useState([]);
     const [cardapios, setCardapios] = useState([]);
+    const [download, setDownload] = useState("");    
+
+    const [cardapioNome, setCardapioNome] = useState("");    
+
+
+    const [arquivo, setArquivo] = useState('');
+    const [arquivoUpload, setArquivoUpload] = useState('');
+
 
     console.log(cardapios);
 
@@ -29,6 +38,155 @@ export default function Manager(){
         })
         
     },[]);
+
+    async function buscarCardapios(id){
+
+        if(id===null || id===undefined){
+            alert("Selecione uma empresa.")
+        } else {
+            try{            
+                const response = await api.get(`api/cardapio/v1/findAllByEmpresa/${id}`,{                
+                  headers:{
+                      Authorization: `Bearer ${accessToken}`
+                  },
+                  params: {
+                    page: 0,
+                    limit: 10,
+                    direction: 'asc'
+                  }
+                }).then(responses=> {
+                    setCardapios(responses.data._embedded.cardapioVoes)
+                })                          
+                
+          
+              } catch (err){
+                alert('Erro ao buscar registros!'+err)
+              }
+        }
+
+    }  
+
+    async function downloadArquivo(downloadLink){
+        
+        
+            try{            
+                 await api.get(downloadLink,{                
+                  headers:{
+                      Authorization: `Bearer ${accessToken}`
+                  }, responseType: 'blob'
+                }).then(response=>{
+                    if(response.data.type==="application/pdf"){
+                        FileDownload(response.data,"download.pdf")
+                    }
+                    if(response.data.type==="image/jpeg"){
+                        FileDownload(response.data,"download.jpeg")
+                    }
+                    if(response.data.type==="image/png"){
+                        FileDownload(response.data,"download.png")
+                    }
+                    
+                    
+                }
+
+                )                                           
+
+          
+              } catch (err){
+                alert('Erro ao buscar registros!'+err)
+              }
+        
+
+    } 
+
+    async function downloadQrcode(idCardapio){
+        
+        
+        try{            
+             await api.get(`api/cardapio/v1/report-qrcode/${idCardapio}`,{                
+              params:{
+                acao: 'v'
+              },
+              headers:{
+                  Authorization: `Bearer ${accessToken}`
+              }, responseType: 'blob'
+            }).then(response=>{
+                if(response.data.type==="application/pdf"){
+                    FileDownload(response.data,"qrcode.pdf")
+                }
+                if(response.data.type==="image/jpeg"){
+                    FileDownload(response.data,"qrcode.jpeg")
+                }
+                if(response.data.type==="image/png"){
+                    FileDownload(response.data,"qrcode.png")
+                }                
+                
+            }
+
+            )                                           
+
+      
+          } catch (err){
+            alert('Erro ao buscar registros!'+err)
+          }
+    
+
+}
+
+    async function upload(e){
+        e.preventDefault();        
+
+        
+        const formData = new FormData();
+        formData.append('file',arquivo);
+
+        const headers = {
+            'headers':{
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type' : 'multipart/form-data'
+            }
+        }
+
+        try{
+    
+            const response = await api.post('/api/file/v1/uploadFile', formData, headers);
+                
+            console.log(response.data);     
+            var empresaId = empresaResponse;
+            var urlCardapio = response.data.fileDownloadUri;
+            var urlQrcode   =  response.data.fileUrl;
+            const data = {
+                cardapioNome,
+                empresaId,
+                urlCardapio,
+                urlQrcode
+            }
+
+            try{
+    
+                await api.post('api/cardapio/v1/salvar',data,{
+                  headers:{
+                      Authorization: `Bearer ${accessToken}`
+                  }
+                });
+                  
+                alert('Salvo com sucesso.')          
+                setCardapioNome('');
+                setArquivo('');            
+              } catch (err){
+                alert('Erro ao salvar registro!')
+              }
+            
+            alert('Salvo com sucesso.')                      
+          } catch (err){
+            alert('Erro ao salvar registro!')
+          }
+      
+        };
+
+    async function consoleLog(e){
+        e.preventDefault(); 
+        console.log(arquivo);
+    }    
 
     return(
         <div id="container">
@@ -60,10 +218,11 @@ export default function Manager(){
                                 {empresas.map( p=>(
                                           <option value={p.id}>{p.empresaNome}</option>                                     
                                 ))}
-                            
+                                
             </select>
+            <button className="input-button-5" onClick={()=> buscarCardapios(empresaResponse)}>Buscar</button>
             
-            { cardapios.length == 0 ? ' ':
+            { empresaResponse=== undefined || empresaResponse=== '' ? ' ':
             <div id="lista-1">
                 <table>
                     <tr>
@@ -73,12 +232,37 @@ export default function Manager(){
                         <th>Ultima Atualização</th>
                         <th>Ações</th>
                     </tr>
-                    
+                    {cardapios.map( p=>(
+                    <tr key={p.id}>
+                        <td> {p.cardapioNome} </td>
+                        <td> <button className="input-button-6" onClick={()=> downloadArquivo(p.urlCardapio)}> Download Arquivo </button> </td>
+                        <td> <button className="input-button-6" onClick={()=> downloadQrcode(p.id)}> Download Qr Code </button> </td>
+                        <td>{ p.dataAtualizacao ===null || p.dataAtualizacao ==='' ? Intl.DateTimeFormat('pt-BR').format(new Date(p.dataCadastro)):Intl.DateTimeFormat('pt-BR').format(new Date(p.dataAtualizacao))}</td>
+                        <td> ' ' </td>
+                    </tr>
+                                ))}
                     
                 </table>
             </div>  
             }                                    
             
+            { empresaResponse=== undefined || empresaResponse=== '' ? ' ':
+                <div id="consulta-2">
+                    <div className="row-1">
+                        <h2 className="text-consulta">SALVA UM NOVO CARDÁPIO.</h2>
+                        
+                    </div>
+                    <div className="row-2">
+                        <form className="consulta-1" onSubmit={upload}>
+                            <input className="input-3" type="text" name="nomeEmpresa" value={cardapioNome} onChange={e => setCardapioNome(e.target.value)} placeholder="Cardapio nome."/>
+                            <input id="selecao-arquivo" className="input-5" type="file" name="arquivo" onChange={e => setArquivo(e.target.files[0])}/>
+                            <label for="selecao-arquivo">Selecionar um arquivo</label>                            
+                            {arquivo==='' ?<p className="arquivo-selecao">Nenhum arquivo selecionado!</p> :<p className="arquivo-selecao">{arquivo.name}</p>}    
+                            <input className="input-2" type="submit" value="Salvar" />
+                        </form>
+                    </div>
+                </div>
+            }
 
                 
 

@@ -22,4 +22,6 @@ public class UploadFileResponseVO implements Serializable {
 
     private long size;
 
+    private String fileUrl;
+
 }
