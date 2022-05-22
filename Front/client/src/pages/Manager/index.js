@@ -183,9 +183,27 @@ export default function Manager(){
       
         };
 
-    async function consoleLog(e){
-        e.preventDefault(); 
-        console.log(arquivo);
+    async function excluir(id) {
+
+        var resultado = window.confirm("Deseja excluir o item selecionado?");
+
+        if(resultado==true){
+            try {
+                await api.delete(`api/cardapio/v1/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                })
+                
+                alert('Cardapio deletado com sucesso!')
+                setCardapios(cardapios.filter(c => c.id !== id))
+            } catch (err) {
+                alert('Delete failed! Try again.');
+            }
+        }
+            
+        
+        
     }    
 
     return(
@@ -238,7 +256,7 @@ export default function Manager(){
                         <td> <button className="input-button-6" onClick={()=> downloadArquivo(p.urlCardapio)}> Download Arquivo </button> </td>
                         <td> <button className="input-button-6" onClick={()=> downloadQrcode(p.id)}> Download Qr Code </button> </td>
                         <td>{ p.dataAtualizacao ===null || p.dataAtualizacao ==='' ? Intl.DateTimeFormat('pt-BR').format(new Date(p.dataCadastro)):Intl.DateTimeFormat('pt-BR').format(new Date(p.dataAtualizacao))}</td>
-                        <td> ' ' </td>
+                        <td><button className="input-button-deletar" onClick={()=> excluir(p.id)} >Excluir</button></td>
                     </tr>
                                 ))}
                     
