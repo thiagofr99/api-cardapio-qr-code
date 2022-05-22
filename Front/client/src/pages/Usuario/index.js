@@ -137,7 +137,7 @@ export default function Usuario(){
                             <input className="input-3" type="text" name="username" value={userName} onChange={e => setUsername(e.target.value)} placeholder="Login Usuário."/>
                             <input className="input-3" type="text" name="fullName" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Nome Completo."/>
                             <input className="input-3" type="password" name="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password."/>
-                            <select id="permissao" className="input-select" name="select" value={permissionsResponse} onChange={e=> setPermissionsResponse(e.target.value)}>
+                            <select id="permissao" className="input-select-3" name="select" value={permissionsResponse} onChange={e=> setPermissionsResponse(e.target.value)}>
                                 <option value="">Selecione uma Opção!</option>
                                 {permissionsReturn.map( p=>(
                                           <option value={p.valorEnum}>{p.descricao}</option>                                     
