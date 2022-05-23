@@ -7,12 +7,14 @@ import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceNotFoundException;
 import com.devthiagofurtado.cardapioqrcode.repository.ProdutoRepository;
+import com.devthiagofurtado.cardapioqrcode.util.MensagemCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.time.LocalDate;
 
 @Service
@@ -67,27 +69,27 @@ public class ProdutoService {
 
     }
 
-//    @Transactional
-//    public MensagemCustom deletar(Long id, String userAdmin) throws IOException {
-//        var cardapio = findByIdEntity(id);
-//        userService.validarUsuarioAdminGerente(userAdmin, cardapio.getEmpresa());
-//
-//        Path path = Path.of(cardapio.getUrlQrcode());
-//
-//        if (Files.notExists(path)) {
-//            throw new FileStorageException("Arquivo para excluir não existe.");
-//        }
-//
-//        Files.delete(path.toAbsolutePath());
-//
-////        if(Files.exists(path)){
-////            throw new FileStorageException("Arquivo não foi excluido.");
-////        }
-//
-//        cardapioRepository.delete(cardapio);
-//
-//        return new MensagemCustom("Registro de cardapio excluído com sucesso.", LocalDate.now());
-//    }
+    public ProdutoVO findById(Long id, String user) {
+        var produto = produtoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Produto não localizado por Id."));
+
+        userService.validarUsuarioGerente(user, produto.getCardapio().getEmpresa());
+
+        return DozerConverter.parseObject(produto, ProdutoVO.class);
+    }
+
+    private Produto findByIdEntity(Long id) {
+        return produtoRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Produto não localizado por Id."));
+    }
+
+    @Transactional
+    public MensagemCustom deletar(Long id, String user) throws IOException {
+        var produto = findByIdEntity(id);
+        userService.validarUsuarioAdminGerente(user, produto.getCardapio().getEmpresa());
+
+        produtoRepository.delete(produto);
+
+        return new MensagemCustom("Registro de produto excluído com sucesso.", LocalDate.now());
+    }
 //
 //    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
 //    public Page<CardapioVO> findAllByEmpresa(Long idEmpresa, Pageable pageable, String userAdmin) {

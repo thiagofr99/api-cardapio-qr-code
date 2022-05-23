@@ -2,9 +2,11 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 
 
 import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
+import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.ProdutoService;
 import com.devthiagofurtado.cardapioqrcode.util.HeaderUtil;
+import com.devthiagofurtado.cardapioqrcode.util.MensagemCustom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,11 @@ import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 
 @Api(tags = "ProdutoEndPoint")
@@ -36,7 +43,7 @@ public class ProdutoController {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
         var produtoVOCrated = produtoService.salvar(produtoVO, userAdmin);
-        //empresaVOCrated.add(linkTo(methodOn(CardapioController.class).buscarPorId(empresaVOCrated.getKey())).withSelfRel());
+        produtoVOCrated.add(linkTo(methodOn(ProdutoController.class).buscarPorId(produtoVOCrated.getKey())).withSelfRel());
         return new ResponseEntity<>(produtoVOCrated, HttpStatus.CREATED);
 
     }
@@ -48,7 +55,7 @@ public class ProdutoController {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
         var produtoVOCrated = produtoService.salvar(produtoVO, userAdmin);
-        //empresaVOCrated.add(linkTo(methodOn(CardapioController.class).buscarPorId(empresaVOCrated.getKey())).withSelfRel());
+        produtoVOCrated.add(linkTo(methodOn(ProdutoController.class).buscarPorId(produtoVOCrated.getKey())).withSelfRel());
         return new ResponseEntity<>(produtoVOCrated, HttpStatus.OK);
 
     }
@@ -73,14 +80,23 @@ public class ProdutoController {
 //
 //    }
 //
-//    @ApiOperation(value = "Deleta a company for Id.")
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) throws IOException {
-//        String token = HeaderUtil.obterToken();
-//        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
-//
-//        return new ResponseEntity<>(cardapioService.deletar(id, userAdmin), HttpStatus.OK);
-//    }
+    @ApiOperation(value = "Deleta a product for Id.")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) throws IOException {
+        String token = HeaderUtil.obterToken();
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        return new ResponseEntity<>(produtoService.deletar(id, userAdmin), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Find produto by Id")
+    @GetMapping(value = {"/{id}"}, produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<ProdutoVO> buscarPorId(@PathVariable(value = "id") Long id){
+        String token = HeaderUtil.obterToken();
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+        var vo = produtoService.findById(id, userAdmin);
+        vo.add(linkTo(methodOn(ProdutoController.class).buscarPorId(id)).withSelfRel());
+        return new ResponseEntity<>(vo,HttpStatus.OK);
+    }
 //
 //    @ApiOperation(value = "Find all Cardapios by Enterpryse")
 //    @GetMapping(value = {"/findAllByEmpresa/{idEmpresa}"}, produces = {"application/json", "application/xml", "application/x-yaml"})
