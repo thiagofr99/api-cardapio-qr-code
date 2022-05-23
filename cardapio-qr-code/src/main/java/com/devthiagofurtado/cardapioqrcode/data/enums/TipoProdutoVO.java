@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @JsonSerialize(using = EnumSerializerCustom.class)
 public enum TipoProdutoVO {
@@ -45,6 +46,10 @@ public enum TipoProdutoVO {
     public static List<TipoProdutoVO> listar() {
 
         return Arrays.asList(TipoProdutoVO.values());
+    }
+
+    public static TipoProdutoVO buscarPorValorEnum(String nome){
+        return Arrays.stream(TipoProdutoVO.values()).filter(t-> t.name().equals(nome)).collect(Collectors.toList()).get(0);
     }
 
 }

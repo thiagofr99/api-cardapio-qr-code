@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -28,24 +29,29 @@ public class Produto implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @NotBlank
     @Column(name = "produto_nome")
     private String produtoNome;
 
+    @NotNull
     @Column(name = "valor_produto")
     private Double valorProduto;
 
+    @NotNull
     @Column(name = "data_cadastro")
     private LocalDate dataCadastro;
 
     @Column(name = "data_atualizacao")
     private LocalDate dataAtualizacao;
 
+    @NotNull
     @Column(name = "disponivel")
     private Boolean disponivel;
 
     @Column(name = "observacao")
     private String observacao;
 
+    @NotNull
     @Column(name = "tipo_produto")
     @Enumerated(EnumType.STRING)
     private TipoProdutoVO tipoProdutoVO;

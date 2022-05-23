@@ -135,8 +135,33 @@ export default function Manager(){
     async function upload(e){
         e.preventDefault();        
 
-        
-        const formData = new FormData();
+        if(arquivo===undefined || arquivo=== ''){
+            var empresaId = empresaResponse;
+            var urlCardapio = '';
+            var urlQrcode   =  '';
+            const data = {
+                cardapioNome,
+                empresaId,
+                urlCardapio,
+                urlQrcode
+            }
+
+            try{
+    
+                await api.post('api/cardapio/v1/salvar',data,{
+                  headers:{
+                      Authorization: `Bearer ${accessToken}`
+                  }
+                });
+                              
+                setCardapioNome('');                
+                alert('Cardápio salvo com sucesso.');
+              } catch (err){
+                alert('Erro ao salvar Cardápio!')
+              }
+
+        } else {
+            const formData = new FormData();
         formData.append('file',arquivo);
 
         const headers = {
@@ -149,8 +174,7 @@ export default function Manager(){
         try{
     
             const response = await api.post('/api/file/v1/uploadFile', formData, headers);
-                
-            console.log(response.data);     
+                            
             var empresaId = empresaResponse;
             var urlCardapio = response.data.fileDownloadUri;
             var urlQrcode   =  response.data.fileUrl;
@@ -168,18 +192,19 @@ export default function Manager(){
                       Authorization: `Bearer ${accessToken}`
                   }
                 });
-                  
-                alert('Salvo com sucesso.')          
+                              
                 setCardapioNome('');
                 setArquivo('');            
               } catch (err){
-                alert('Erro ao salvar registro!')
+                alert('Erro ao salvar Cardápio!')
               }
             
             alert('Salvo com sucesso.')                      
           } catch (err){
-            alert('Erro ao salvar registro!')
+            alert('Erro ao fazer upload de cardápio!')
           }
+        }
+        
       
         };
 

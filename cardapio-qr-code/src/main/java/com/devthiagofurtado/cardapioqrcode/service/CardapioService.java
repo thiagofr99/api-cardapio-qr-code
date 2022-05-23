@@ -90,7 +90,7 @@ public class CardapioService {
         return DozerConverter.parseObject(cardapio, CardapioVO.class);
     }
 
-    private Cardapio findByIdEntity(Long id) {
+    public Cardapio findByIdEntity(Long id) {
         return cardapioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cardapio não localizado por Id."));
     }
 }
