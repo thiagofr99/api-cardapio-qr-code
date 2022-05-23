@@ -2,7 +2,6 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 
 
 import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
-import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.ProdutoService;
 import com.devthiagofurtado.cardapioqrcode.util.HeaderUtil;
@@ -16,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -60,26 +60,6 @@ public class ProdutoController {
 
     }
 
-//    @ApiOperation(value = "Print a QR Code to report")
-//    @GetMapping(value = "/report-qrcode/{id}")
-//    public void imprimirQrCode(@PathVariable(value = "id") Long id,
-//                               @RequestParam("acao") String acao,
-//                               HttpServletResponse response) throws IOException {
-//
-//        jasperService.addParams("ID_CARDAPIO", id);
-//        byte[] bytes = jasperService.exportarPDF();
-//
-//        response.setContentType(MediaType.APPLICATION_PDF_VALUE);
-//        if (acao.equals("v")) {
-//            response.setHeader("Content-disposition", "inline; filename=QR-code-cardapio.pdf");
-//        } else {
-//            response.setHeader("Content-disposition", "attachment; filename=QR-code-cardapio.pdf");
-//        }
-//
-//        response.getOutputStream().write(bytes);
-//
-//    }
-//
     @ApiOperation(value = "Deleta a product for Id.")
     @DeleteMapping("/{id}")
     public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) throws IOException {
@@ -90,30 +70,26 @@ public class ProdutoController {
 
     @ApiOperation(value = "Find produto by Id")
     @GetMapping(value = {"/{id}"}, produces = {"application/json", "application/xml", "application/x-yaml"})
-    public ResponseEntity<ProdutoVO> buscarPorId(@PathVariable(value = "id") Long id){
+    public ResponseEntity<ProdutoVO> buscarPorId(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
         var vo = produtoService.findById(id, userAdmin);
         vo.add(linkTo(methodOn(ProdutoController.class).buscarPorId(id)).withSelfRel());
-        return new ResponseEntity<>(vo,HttpStatus.OK);
+        return new ResponseEntity<>(vo, HttpStatus.OK);
     }
-//
-//    @ApiOperation(value = "Find all Cardapios by Enterpryse")
-//    @GetMapping(value = {"/findAllByEmpresa/{idEmpresa}"}, produces = {"application/json", "application/xml", "application/x-yaml"})
-//    public ResponseEntity<?> buscarTodosPorEmpresa(@RequestParam(value = "page", defaultValue = "0") int page,
-//                                                   @RequestParam(value = "limit", defaultValue = "12") int limit,
-//                                                   @RequestParam(value = "direction", defaultValue = "ASC") String direction,
-//                                                   @PathVariable(value = "idEmpresa") Long id) {
-//        String token = HeaderUtil.obterToken();
-//        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
-//        var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
-//
-//        Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "cardapioNome"));
-//        var cardapioVOS = cardapioService.findAllByEmpresa(id, pageable, userAdmin);
-////        cardapioVOS.forEach(p ->
-////                p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel())
-////        );
-//        return new ResponseEntity<>(assembler.toResource(cardapioVOS), HttpStatus.OK);
-//    }
+
+    @ApiOperation(value = "Find all Produtos by Cardapio")
+    @GetMapping(value = {"/findAllByCardapio/{idCardapio}"}, produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<List<ProdutoVO>> buscarTodosPorCardapio(
+            @PathVariable(value = "idCardapio") Long id) {
+        String token = HeaderUtil.obterToken();
+        String user = tokenProvider.getUsername(token.substring(7, token.length()));
+
+        var produtosVO = produtoService.findAllByCardapio(id, user);
+        produtosVO.forEach(p ->
+                p.add(linkTo(methodOn(ProdutoController.class).buscarPorId(p.getKey())).withSelfRel())
+        );
+        return new ResponseEntity<>(produtosVO, HttpStatus.OK);
+    }
 }
 

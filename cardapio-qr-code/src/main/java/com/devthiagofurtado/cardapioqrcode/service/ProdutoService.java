@@ -2,13 +2,16 @@ package com.devthiagofurtado.cardapioqrcode.service;
 
 import com.devthiagofurtado.cardapioqrcode.converter.DozerConverter;
 import com.devthiagofurtado.cardapioqrcode.data.enums.TipoProdutoVO;
+import com.devthiagofurtado.cardapioqrcode.data.model.Cardapio;
 import com.devthiagofurtado.cardapioqrcode.data.model.Produto;
+import com.devthiagofurtado.cardapioqrcode.data.vo.CardapioVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceNotFoundException;
 import com.devthiagofurtado.cardapioqrcode.repository.ProdutoRepository;
 import com.devthiagofurtado.cardapioqrcode.util.MensagemCustom;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +19,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ProdutoService {
@@ -90,22 +94,18 @@ public class ProdutoService {
 
         return new MensagemCustom("Registro de produto excluído com sucesso.", LocalDate.now());
     }
-//
-//    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-//    public Page<CardapioVO> findAllByEmpresa(Long idEmpresa, Pageable pageable, String userAdmin) {
-//        var empresa = empresaService.findByIdEntity(idEmpresa);
-//        userService.validarUsuarioGerente(userAdmin, empresa);
-//        var page = cardapioRepository.findAllByEmpresa(empresa, pageable);
-//
-//        return page.map(this::convertToCardapioVO);
-//    }
-//
-//
-//    private CardapioVO convertToCardapioVO(Cardapio cardapio) {
-//        return DozerConverter.parseObject(cardapio, CardapioVO.class);
-//    }
-//
-//    private Cardapio findByIdEntity(Long id) {
-//        return cardapioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cardapio não localizado por Id."));
-//    }
+
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+    public List<ProdutoVO> findAllByCardapio(Long idCardapio, String user) {
+        var cardapio = cardapioService.findByIdEntity(idCardapio);
+        userService.validarUsuarioGerente(user, cardapio.getEmpresa());
+        return DozerConverter.parseListObjects(produtoRepository.findAllByCardapio(cardapio),ProdutoVO.class);
+    }
+
+
+    private CardapioVO convertToCardapioVO(Cardapio cardapio) {
+        return DozerConverter.parseObject(cardapio, CardapioVO.class);
+    }
+
+
 }
