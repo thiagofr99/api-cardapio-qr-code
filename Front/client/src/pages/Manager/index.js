@@ -22,8 +22,9 @@ export default function Manager(){
     const [arquivo, setArquivo] = useState('');
     const [arquivoUpload, setArquivoUpload] = useState('');
 
+    
+    const history = useHistory();
 
-    console.log(cardapios);
 
     const accessToken = sessionStorage.getItem('accessToken');
 
@@ -229,7 +230,11 @@ export default function Manager(){
             
         
         
-    }    
+    }
+
+    async function abrirProdutos(cdpId){
+        history.push(`/produto/${cdpId}`);
+    }
 
     return(
         <div id="container">
@@ -240,7 +245,7 @@ export default function Manager(){
                         <li>
                             
                             </li>
-                            <li> <Link className="active" to="/empresa"> 
+                            <li> <Link className="active" to="/manager"> 
                                 Empresas
                             </Link>     
                         </li>                        
@@ -278,10 +283,18 @@ export default function Manager(){
                     {cardapios.map( p=>(
                     <tr key={p.id}>
                         <td> {p.cardapioNome} </td>
-                        <td> <button className="input-button-6" onClick={()=> downloadArquivo(p.urlCardapio)}> Download Arquivo </button> </td>
-                        <td> <button className="input-button-6" onClick={()=> downloadQrcode(p.id)}> Download Qr Code </button> </td>
+                        <td> { p.urlCardapio===null || p.urlCardapio ==='' ? ' ':
+                            <button className="input-button-6" onClick={()=> downloadArquivo(p.urlCardapio)}> Download Arquivo </button> 
+                        }
+                        </td>
+                        <td> { p.urlQrcode===null || p.urlQrcode ==='' ? ' ':
+                            <button className="input-button-6" onClick={()=> downloadQrcode(p.id)}> Download Qr Code </button> 
+                        }   
+                        </td>
                         <td>{ p.dataAtualizacao ===null || p.dataAtualizacao ==='' ? Intl.DateTimeFormat('pt-BR').format(new Date(p.dataCadastro)):Intl.DateTimeFormat('pt-BR').format(new Date(p.dataAtualizacao))}</td>
-                        <td><button className="input-button-deletar" onClick={()=> excluir(p.id)} >Excluir</button></td>
+                        <td>{ p.urlCardapio===null || p.urlCardapio ==='' ? <button className="input-button-patch" onClick={()=> abrirProdutos(p.id)} >Produtos</button> :' '}
+                            <button className="input-button-deletar" onClick={()=> excluir(p.id)} >Excluir</button>
+                        </td>
                     </tr>
                                 ))}
                     
