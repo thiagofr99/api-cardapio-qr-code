@@ -1,6 +1,8 @@
 package com.devthiagofurtado.cardapioqrcode.controller;
 
 
+import com.devthiagofurtado.cardapioqrcode.data.enums.TipoProdutoVO;
+import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.ProdutoService;
@@ -90,6 +92,12 @@ public class ProdutoController {
                 p.add(linkTo(methodOn(ProdutoController.class).buscarPorId(p.getKey())).withSelfRel())
         );
         return new ResponseEntity<>(produtosVO, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Find Tipo Produto.")
+    @GetMapping(value = "/tipo-produto", produces = {"application/json", "application/xml", "application/x-yaml"})
+    public ResponseEntity<List<TipoProdutoVO>> listarTipoProdutos() {
+        return new ResponseEntity<>(TipoProdutoVO.listar(), HttpStatus.OK);
     }
 }
 

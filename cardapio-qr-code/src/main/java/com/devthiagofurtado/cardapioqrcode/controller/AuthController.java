@@ -143,7 +143,7 @@ public class AuthController {
 
     @ApiOperation(value = "Find Permissions.")
     @GetMapping(value = "/permissions", produces = {"application/json", "application/xml", "application/x-yaml"})
-    public ResponseEntity<List<PermissionVO>> buscarPorId() {
+    public ResponseEntity<List<PermissionVO>> listarPermissions() {
         return new ResponseEntity<>(PermissionVO.listarPermissions(), HttpStatus.OK);
     }
 
