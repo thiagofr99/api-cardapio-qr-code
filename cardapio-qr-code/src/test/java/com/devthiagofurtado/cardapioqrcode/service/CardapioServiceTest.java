@@ -8,7 +8,7 @@ import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.exception.FileStorageException;
 import com.devthiagofurtado.cardapioqrcode.modelCreator.EmpresaModelCreator;
 import com.devthiagofurtado.cardapioqrcode.modelCreator.UserModelCreator;
-import com.devthiagofurtado.cardapioqrcode.modelCreator.jsonTest.CardapioModelCreator;
+import com.devthiagofurtado.cardapioqrcode.modelCreator.CardapioModelCreator;
 import com.devthiagofurtado.cardapioqrcode.repository.CardapioRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,16 +18,18 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @ExtendWith(SpringExtension.class)
 class CardapioServiceTest {
@@ -62,6 +64,12 @@ class CardapioServiceTest {
         BDDMockito.doNothing().when(userService).validarUsuarioAdmin(ArgumentMatchers.anyString());
 
         BDDMockito.doNothing().when(userService).validarUsuarioAdminGerente(ArgumentMatchers.anyString(), ArgumentMatchers.any(Empresa.class));
+
+        BDDMockito.when(cardapioRepository.findAllByEmpresa(ArgumentMatchers.any(Empresa.class), ArgumentMatchers.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.singletonList(cardapio)));
+
+        BDDMockito.when(empresaService.findByIdEntity(ArgumentMatchers.anyLong()))
+                .thenReturn(empresa);
     }
 
     @Test
@@ -102,9 +110,38 @@ class CardapioServiceTest {
 
     @Test
     void deletar_retornaFileStorageException_erro() throws IOException {
+        List<Permission> permission = UserModelCreator.permissions(PermissionVO.MANAGER);
+        User user = UserModelCreator.cadastrado(LocalDate.now().plusDays(30),permission,true);
+        Empresa empresa = EmpresaModelCreator.cadastrado(user,true);
+        Cardapio cardapio = CardapioModelCreator.cadastrado(empresa,true,"erro.txt");
+
+        BDDMockito.when(cardapioRepository.findById(ArgumentMatchers.anyLong()))
+                        .thenReturn(Optional.of(cardapio));
 
         Assertions.assertThatThrownBy(()-> cardapioService.deletar(1L, "teste"))
                 .isInstanceOf(FileStorageException.class);
+
+
+    }
+
+    @Test
+    void findAllByEmpresa(){
+        Pageable pageable = PageRequest.of(1, 12);
+
+        var teste = cardapioService.findAllByEmpresa(1L,pageable,"teste");
+
+        Assertions.assertThat(teste).isNotEmpty().isNotNull();
+        Assertions.assertThat(teste.get().collect(Collectors.toList()).get(0).getKey()).isNotNull();
+
+    }
+
+    @Test
+    void findById() {
+        var teste = cardapioService.findById(1L,"teste");
+
+        Assertions.assertThat(teste).isNotNull();
+        Assertions.assertThat(teste.getKey()).isNotNull();
+        Assertions.assertThat(teste.getCardapioNome()).isNotNull();
 
 
     }

@@ -4,7 +4,6 @@ import com.devthiagofurtado.cardapioqrcode.converter.DozerConverter;
 import com.devthiagofurtado.cardapioqrcode.data.model.Empresa;
 import com.devthiagofurtado.cardapioqrcode.data.model.Permission;
 import com.devthiagofurtado.cardapioqrcode.data.model.User;
-import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaDetalharVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
@@ -121,10 +120,10 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void validarUsuarioGerente(String userName, Empresa empresa){
+    public void validarUsuarioGerente(String userName, Empresa empresa) {
         User user = findByUserName(userName);
 
-        if(!empresa.getUser().getUserName().equals(user.getUserName())){
+        if (!empresa.getUser().getUserName().equals(user.getUserName())) {
             throw new ResourceBadRequestException("Apenas usuário Gerente da referida empresa pode executar a solicitação.");
         }
     }

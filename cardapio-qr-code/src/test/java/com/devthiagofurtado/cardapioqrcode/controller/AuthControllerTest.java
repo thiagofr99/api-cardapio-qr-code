@@ -122,6 +122,16 @@ class AuthControllerTest {
     }
 
     @Test
+    void listarPermissions() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/permissions").headers(headers)).andExpect(status().isOk());
+    }
+
+    @Test
+    void buscarGerentes() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/manangers").headers(headers)).andExpect(status().isOk());
+    }
+
+    @Test
     void habilitarLicencaTrintaDias() throws Exception {
         mockMvc.perform(patch(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
     }

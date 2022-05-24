@@ -2,9 +2,7 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 
 
 import com.devthiagofurtado.cardapioqrcode.data.enums.TipoProdutoVO;
-import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
-import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.ProdutoService;
 import com.devthiagofurtado.cardapioqrcode.util.HeaderUtil;
@@ -17,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -65,7 +62,7 @@ public class ProdutoController {
 
     @ApiOperation(value = "Deleta a product for Id.")
     @DeleteMapping("/{id}")
-    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) throws IOException {
+    public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
         return new ResponseEntity<>(produtoService.deletar(id, userAdmin), HttpStatus.OK);

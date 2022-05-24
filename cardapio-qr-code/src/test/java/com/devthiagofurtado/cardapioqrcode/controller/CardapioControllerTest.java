@@ -1,19 +1,12 @@
 package com.devthiagofurtado.cardapioqrcode.controller;
 
-import com.devthiagofurtado.cardapioqrcode.data.model.Cardapio;
-import com.devthiagofurtado.cardapioqrcode.data.model.Empresa;
-import com.devthiagofurtado.cardapioqrcode.data.model.Permission;
-import com.devthiagofurtado.cardapioqrcode.data.model.User;
 import com.devthiagofurtado.cardapioqrcode.data.vo.CardapioVO;
-import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
-import com.devthiagofurtado.cardapioqrcode.modelCreator.EmpresaModelCreator;
+import com.devthiagofurtado.cardapioqrcode.modelCreator.CardapioModelCreator;
 import com.devthiagofurtado.cardapioqrcode.modelCreator.UserModelCreator;
-import com.devthiagofurtado.cardapioqrcode.modelCreator.jsonTest.CardapioModelCreator;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.CardapioService;
-import com.devthiagofurtado.cardapioqrcode.service.EmpresaService;
 import com.devthiagofurtado.cardapioqrcode.service.JasperService;
 import com.devthiagofurtado.cardapioqrcode.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,9 +32,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.Collections;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,6 +62,9 @@ class CardapioControllerTest {
     @Mock
     AuthenticationManager authenticationManager;
 
+    @Mock
+    private PagedResourcesAssembler<CardapioVO> assembler;
+
     @Autowired
     private ObjectMapper mapper;
 
@@ -94,7 +88,7 @@ class CardapioControllerTest {
 
         var user = UserModelCreator.vo(UserModelCreator.permissionVOS(PermissionVO.ADMIN), true, true);
 
-        CardapioVO cardapioVO = CardapioModelCreator.vo(1L,true,2L);
+        CardapioVO cardapioVO = CardapioModelCreator.vo(1L, true, 2L);
 
         BDDMockito.when(userService.findById(ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()))
                 .thenReturn(user);
@@ -114,18 +108,20 @@ class CardapioControllerTest {
         BDDMockito.when(jwtTokenProvider.getUsername(ArgumentMatchers.anyString()))
                 .thenReturn("teste");
 
-        BDDMockito.when(cardapioService.salvar(ArgumentMatchers.any(CardapioVO.class),ArgumentMatchers.anyString()))
+        BDDMockito.when(cardapioService.salvar(ArgumentMatchers.any(CardapioVO.class), ArgumentMatchers.anyString()))
                 .thenReturn(cardapioVO);
 
         BDDMockito.when(jasperService.exportarPDF())
                 .thenReturn(new byte[123]);
 
+        BDDMockito.when(cardapioService.findAllByEmpresa(ArgumentMatchers.anyLong(), ArgumentMatchers.any(Pageable.class), ArgumentMatchers.anyString()))
+                .thenReturn(new PageImpl<>(Collections.singletonList(cardapioVO)));
     }
 
 
     @Test
     void salvarCardapio() throws Exception {
-        CardapioVO cardapioVO = CardapioModelCreator.vo(1L,true,2L);
+        CardapioVO cardapioVO = CardapioModelCreator.vo(1L, true, 2L);
         String jsonRequest = mapper.writeValueAsString(cardapioVO);
 
         mockMvc.perform(post(BASE_URL + "/salvar").headers(headers).contentType(APPLICATION_JSON_UTF8).content(jsonRequest)).andExpect(status().isCreated());
@@ -141,5 +137,19 @@ class CardapioControllerTest {
     @Test
     void deletar() throws Exception {
         mockMvc.perform(delete(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
+    }
+
+    @Test
+    void buscarPorId() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
+    }
+
+    @Test
+    void buscarTodosPorEmpresa() throws Exception {
+        LinkedMultiValueMap<String, String> param = new LinkedMultiValueMap<>();
+        param.add("page", "1");
+        param.add("limit", "10");
+        param.add("direction", "ASC");
+        mockMvc.perform(get(BASE_URL + "/findAllByEmpresa/1").params(param).headers(headers)).andExpect(status().isOk());
     }
 }

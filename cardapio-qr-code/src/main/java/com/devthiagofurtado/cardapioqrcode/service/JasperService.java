@@ -1,5 +1,6 @@
 package com.devthiagofurtado.cardapioqrcode.service;
 
+import com.devthiagofurtado.cardapioqrcode.exception.ResourceBadRequestException;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -35,7 +36,7 @@ public class JasperService {
             JasperPrint print = JasperFillManager.fillReport(file.getAbsolutePath(), params, connection);
             bytes = JasperExportManager.exportReportToPdf(print);
         } catch (FileNotFoundException | JRException e) {
-            e.printStackTrace();
+            throw new ResourceBadRequestException("Erro ao exportar relatório");
         }
 
         return bytes;

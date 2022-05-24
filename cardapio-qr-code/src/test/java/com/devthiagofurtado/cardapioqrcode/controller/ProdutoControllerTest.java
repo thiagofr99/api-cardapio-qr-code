@@ -2,11 +2,14 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 
 import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
+import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.modelCreator.EmpresaModelCreator;
+import com.devthiagofurtado.cardapioqrcode.modelCreator.ProdutoModelCreator;
 import com.devthiagofurtado.cardapioqrcode.modelCreator.UserModelCreator;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.EmpresaService;
+import com.devthiagofurtado.cardapioqrcode.service.ProdutoService;
 import com.devthiagofurtado.cardapioqrcode.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -38,19 +41,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class EmpresaControllerTest {
+class ProdutoControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @InjectMocks
-    private EmpresaController empresaController;
+    private ProdutoController produtoController;
 
     @Mock
     private UserService userService;
 
     @Mock
-    private EmpresaService empresaService;
+    private ProdutoService produtoService;
 
     @Mock
     JwtTokenProvider jwtTokenProvider;
@@ -59,12 +62,12 @@ class EmpresaControllerTest {
     AuthenticationManager authenticationManager;
 
     @Mock
-    private PagedResourcesAssembler<EmpresaVO> assembler;
+    private PagedResourcesAssembler<ProdutoVO> assembler;
 
     @Autowired
     private ObjectMapper mapper;
 
-    private final String BASE_URL = "/api/empresa/v1";
+    private final String BASE_URL = "/api/produto/v1";
 
     public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(),
             MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8);
@@ -73,7 +76,7 @@ class EmpresaControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(empresaController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(produtoController).build();
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
@@ -102,32 +105,30 @@ class EmpresaControllerTest {
         BDDMockito.when(jwtTokenProvider.getUsername(ArgumentMatchers.anyString()))
                 .thenReturn("teste");
 
-        BDDMockito.when(empresaService.salvar(ArgumentMatchers.any(EmpresaVO.class), ArgumentMatchers.anyString()))
-                .thenReturn(EmpresaModelCreator.vo(1L));
+        BDDMockito.when(produtoService.salvar(ArgumentMatchers.any(ProdutoVO.class),ArgumentMatchers.anyString()))
+                .thenReturn(ProdutoModelCreator.vo(1L,true));
 
-        BDDMockito.when(empresaService.atualizar(ArgumentMatchers.any(EmpresaVO.class), ArgumentMatchers.anyString()))
-                .thenReturn(EmpresaModelCreator.vo(1L));
+        BDDMockito.when(produtoService.findById(ArgumentMatchers.anyLong(),ArgumentMatchers.anyString()))
+                .thenReturn(ProdutoModelCreator.vo(1L,true));
 
-        BDDMockito.when(empresaService.findById(ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()))
-                .thenReturn(EmpresaModelCreator.detalharVo(1L));
+        BDDMockito.when(produtoService.findAllByCardapio(ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()))
+                .thenReturn(Collections.singletonList(ProdutoModelCreator.vo(1L,true)));
 
-        BDDMockito.when(empresaService.findAllByEmpresaName(ArgumentMatchers.anyString(), ArgumentMatchers.any(Pageable.class), ArgumentMatchers.anyString()))
-                .thenReturn(new PageImpl<>(Collections.singletonList(EmpresaModelCreator.vo(1L))));
-
-
+        BDDMockito.when(produtoService.disponibilidade(ArgumentMatchers.anyLong(),ArgumentMatchers.anyString()))
+                .thenReturn(ProdutoModelCreator.vo(1L,true));
     }
 
 
     @Test
     void salvarEmpresa() throws Exception {
-        String jsonRequest = mapper.writeValueAsString(EmpresaModelCreator.vo(null));
+        String jsonRequest = mapper.writeValueAsString(ProdutoModelCreator.vo(null,true));
 
         mockMvc.perform(post(BASE_URL + "/salvar").headers(headers).contentType(APPLICATION_JSON_UTF8).content(jsonRequest)).andExpect(status().isCreated());
     }
 
     @Test
     void atualizar() throws Exception {
-        String jsonRequest = mapper.writeValueAsString(EmpresaModelCreator.vo(1L));
+        String jsonRequest = mapper.writeValueAsString(ProdutoModelCreator.vo(null,true));
 
         mockMvc.perform(put(BASE_URL + "/atualizar").headers(headers).contentType(APPLICATION_JSON_UTF8).content(jsonRequest)).andExpect(status().isOk());
     }
@@ -138,27 +139,22 @@ class EmpresaControllerTest {
     }
 
     @Test
-    void desabilitar() throws Exception {
-        mockMvc.perform(patch(BASE_URL + "/desabilitar/1").headers(headers)).andExpect(status().isOk());
+    void alternarDisponibilidade() throws Exception {
+        mockMvc.perform(patch(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
     }
 
     @Test
-    void habilitarGerente() throws Exception {
-        mockMvc.perform(patch(BASE_URL + "/1/gerente/teste").headers(headers)).andExpect(status().isOk());
-    }
-
-    @Test
-    void buscarTodosPorEmpresaNome() throws Exception {
-        LinkedMultiValueMap<String, String> param = new LinkedMultiValueMap<>();
-        param.add("page", "1");
-        param.add("limit", "10");
-        param.add("direction", "ASC");
-        param.add("empresaName", "a");
-        mockMvc.perform(get(BASE_URL + "/findAllByEmpresaName").params(param).headers(headers)).andExpect(status().isOk());
+    void buscarTodosPorCardapio() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/findAllByCardapio/1").headers(headers)).andExpect(status().isOk());
     }
 
     @Test
     void deletar() throws Exception {
         mockMvc.perform(delete(BASE_URL + "/1").headers(headers)).andExpect(status().isOk());
+    }
+
+    @Test
+    void listarTipoProdutos() throws Exception {
+        mockMvc.perform(get(BASE_URL + "/tipo-produto").headers(headers)).andExpect(status().isOk());
     }
 }

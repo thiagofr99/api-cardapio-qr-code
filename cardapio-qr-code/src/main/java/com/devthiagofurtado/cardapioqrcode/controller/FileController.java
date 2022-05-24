@@ -27,7 +27,7 @@ public class FileController {
 
     private static final Logger logger = LoggerFactory.getLogger(FileController.class);
 
-    private static String URL_CAMINHO =  "C:\\Users\\thiag\\Documents\\Meu Projeto\\upload\\";
+    private static final String CAMINHO =  "C:\\Users\\thiag\\Documents\\Meu Projeto\\upload\\";
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -44,12 +44,12 @@ public class FileController {
                 .fileDownloadUri(fileDownloadUri)
                 .fileType(file.getContentType())
                 .size(file.getSize())
-                .fileUrl(URL_CAMINHO.concat(fileName))
+                .fileUrl(CAMINHO.concat(fileName))
                 .build();
     }
 
     @PostMapping("/uploadMultipleFiles")
-    public List<UploadFileResponseVO> uploadFile(@RequestParam("files") MultipartFile[] files) {
+    public List<UploadFileResponseVO> uploadFiles(@RequestParam("files") MultipartFile[] files) {
         return Arrays.stream(files).map(this::uploadFile
         ).collect(Collectors.toList());
     }

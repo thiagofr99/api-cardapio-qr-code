@@ -67,10 +67,6 @@ public class CardapioService {
 
         Files.delete(path.toAbsolutePath());
 
-//        if(Files.exists(path)){
-//            throw new FileStorageException("Arquivo não foi excluido.");
-//        }
-
         cardapioRepository.delete(cardapio);
 
         return new MensagemCustom("Registro de cardapio excluído com sucesso.", LocalDate.now());
@@ -92,5 +88,11 @@ public class CardapioService {
 
     public Cardapio findByIdEntity(Long id) {
         return cardapioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cardapio não localizado por Id."));
+    }
+
+    public CardapioVO findById(Long id, String user) {
+        var cardapio = this.findByIdEntity(id);
+        userService.validarUsuarioGerente(user, cardapio.getEmpresa());
+        return DozerConverter.parseObject(cardapio, CardapioVO.class);
     }
 }

@@ -63,6 +63,11 @@ class UserServiceTest {
                         UserModelCreator.permissions(PermissionVO.ADMIN),
                         true))));
 
+        BDDMockito.when(userRepository.findAllManagers())
+                .thenReturn(Collections.singletonList(UserModelCreator.cadastrado(LocalDate.now().plusDays(20),
+                        UserModelCreator.permissions(PermissionVO.MANAGER),
+                        true)));
+
     }
 
     @Test
@@ -233,4 +238,26 @@ class UserServiceTest {
                 .isInstanceOf(ResourceBadRequestException.class);
 
     }
+
+    @Test
+    void validarUsuarioGerente_sucesso(){
+        var usuario = UserModelCreator.cadastrado(LocalDate.now().plusDays(20),UserModelCreator.permissions(PermissionVO.MANAGER),true);
+        var empresa = EmpresaModelCreator.cadastrado(usuario,true);
+
+        userService.validarUsuarioGerente("teste", empresa);
+
+        Assertions.assertThat(empresa.getUser()).isEqualTo(usuario);
+
+    }
+
+    @Test
+    void findAllManagers_sucesso(){
+
+         var teste = userService.findAllManangers("teste");
+
+         Assertions.assertThat(teste).isNotNull().isNotEmpty();
+         Assertions.assertThat(teste.get(0).getKey()).isNotNull();
+
+    }
+
 }

@@ -70,9 +70,9 @@ class EmpresaServiceTest {
     @Test
     void atualizar_retornaEmpresaVO_sucesso() {
 
-        var empresaVO =EmpresaModelCreator.vo(1L);
+        var empresaVO = EmpresaModelCreator.vo(1L);
 
-        var teste = empresaService.atualizar( empresaVO, "teste");
+        var teste = empresaService.atualizar(empresaVO, "teste");
 
         Assertions.assertThat(teste).isNotNull();
         Assertions.assertThat(teste.getKey()).isNotNull();
@@ -83,9 +83,9 @@ class EmpresaServiceTest {
         BDDMockito.when(empresaRepository.findById(ArgumentMatchers.anyLong()))
                 .thenReturn(Optional.empty());
 
-        var empresaVO =EmpresaModelCreator.vo(1L);
+        var empresaVO = EmpresaModelCreator.vo(1L);
 
-        Assertions.assertThatThrownBy(() -> empresaService.atualizar(empresaVO , "teste"))
+        Assertions.assertThatThrownBy(() -> empresaService.atualizar(empresaVO, "teste"))
                 .isInstanceOf(ResourceNotFoundException.class);
 
 
@@ -98,7 +98,7 @@ class EmpresaServiceTest {
 
         var empresa = EmpresaModelCreator.vo(1L);
 
-        Assertions.assertThatThrownBy(() -> empresaService.atualizar(empresa , "teste"))
+        Assertions.assertThatThrownBy(() -> empresaService.atualizar(empresa, "teste"))
                 .isInstanceOf(ResourceBadRequestException.class);
 
 

@@ -2,7 +2,6 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 
 
 import com.devthiagofurtado.cardapioqrcode.data.vo.CardapioVO;
-import com.devthiagofurtado.cardapioqrcode.data.vo.EmpresaVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.CardapioService;
 import com.devthiagofurtado.cardapioqrcode.service.JasperService;
@@ -11,7 +10,6 @@ import com.devthiagofurtado.cardapioqrcode.util.MensagemCustom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -52,9 +50,9 @@ public class CardapioController {
     public ResponseEntity<CardapioVO> salvarCardapio(@RequestBody CardapioVO cardapioVO) {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
-        var empresaVOCrated = cardapioService.salvar(cardapioVO, userAdmin);
-        //empresaVOCrated.add(linkTo(methodOn(CardapioController.class).buscarPorId(empresaVOCrated.getKey())).withSelfRel());
-        return new ResponseEntity<>(empresaVOCrated, HttpStatus.CREATED);
+        var cardapioVOCreated = cardapioService.salvar(cardapioVO, userAdmin);
+        cardapioVOCreated.add(linkTo(methodOn(CardapioController.class).buscarPorId(cardapioVOCreated.getKey())).withSelfRel());
+        return new ResponseEntity<>(cardapioVOCreated, HttpStatus.CREATED);
 
     }
 
@@ -78,13 +76,22 @@ public class CardapioController {
 
     }
 
-    @ApiOperation(value = "Deleta a company for Id.")
+    @ApiOperation(value = "Deleta a cardapio for Id.")
     @DeleteMapping("/{id}")
     public ResponseEntity<MensagemCustom> deletar(@PathVariable(value = "id") Long id) throws IOException {
         String token = HeaderUtil.obterToken();
         String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
 
         return new ResponseEntity<>(cardapioService.deletar(id, userAdmin), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Find a cardapio for Id.")
+    @GetMapping("/{id}")
+    public ResponseEntity<CardapioVO> buscarPorId(@PathVariable(value = "id") Long id) {
+        String token = HeaderUtil.obterToken();
+        String userAdmin = tokenProvider.getUsername(token.substring(7, token.length()));
+
+        return new ResponseEntity<>(cardapioService.findById(id, userAdmin), HttpStatus.OK);
     }
 
     @ApiOperation(value = "Find all Cardapios by Enterpryse")
@@ -99,9 +106,9 @@ public class CardapioController {
 
         Pageable pageable = PageRequest.of(page, limit, Sort.by(sortDirection, "cardapioNome"));
         var cardapioVOS = cardapioService.findAllByEmpresa(id, pageable, userAdmin);
-//        cardapioVOS.forEach(p ->
-//                p.add(linkTo(methodOn(EmpresaController.class).buscarPorId(p.getKey())).withSelfRel())
-//        );
+        cardapioVOS.forEach(p ->
+                p.add(linkTo(methodOn(CardapioController.class).buscarPorId(p.getKey())).withSelfRel())
+        );
         return new ResponseEntity<>(assembler.toResource(cardapioVOS), HttpStatus.OK);
     }
 }
