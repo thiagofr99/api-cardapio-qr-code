@@ -108,4 +108,11 @@ public class ProdutoService {
     }
 
 
+    public ProdutoVO disponibilidade(Long id, String user) {
+        var produto = findByIdEntity(id);
+        var cardapio = cardapioService.findByIdEntity(produto.getCardapio().getId());
+        userService.validarUsuarioGerente(user, cardapio.getEmpresa());
+        produto.setDisponivel(!produto.getDisponivel());
+        return DozerConverter.parseObject(produtoRepository.save(produto),ProdutoVO.class);
+    }
 }

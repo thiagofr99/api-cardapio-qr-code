@@ -74,6 +74,30 @@ export default function Produto(){
         
     }    
 
+    async function alternarDisponivel(id) {
+
+        var resultado = window.confirm("Deseja alterar disponibilidade do item selecionado?");
+
+        if(resultado==true){
+            try {
+                await api.patch(`api/produto/v1/${id}`,
+                {},
+                {    
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                })
+                alert("Alterado com sucesso!");
+                buscarPorCardapio();
+            } catch (err) {
+                alert('Falha ao alterar.');
+            }
+        }
+            
+        
+        
+    }    
+
     async function salvar(e) {
         e.preventDefault();
 
@@ -174,7 +198,7 @@ export default function Produto(){
                                 <td> {Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(p.valorProduto)} </td>
                                 <td> {p.observacao} </td>
                                 <td>{ p.dataAtualizacao ===null || p.dataAtualizacao ==='' ? Intl.DateTimeFormat('pt-BR').format(new Date(p.dataCadastro)):Intl.DateTimeFormat('pt-BR').format(new Date(p.dataAtualizacao))}</td>
-                                <td>{ p.disponivel===true ? <button className="input-button-patch" onClick={""} >Disponível</button>  : <button className="input-button-deletar" onClick={""} >Indisponível</button>}
+                                <td>{ p.disponivel===true ? <button className="input-button-patch" onClick={()=> alternarDisponivel(p.id)} >Disponível</button>  : <button className="input-button-deletar" onClick={()=> alternarDisponivel(p.id)} >Indisponível</button>}
                                     <button className="input-button-deletar" onClick={()=> excluir(p.id)} >Excluir</button>
                                 </td>
                             </tr>  

@@ -4,6 +4,7 @@ package com.devthiagofurtado.cardapioqrcode.controller;
 import com.devthiagofurtado.cardapioqrcode.data.enums.TipoProdutoVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.PermissionVO;
 import com.devthiagofurtado.cardapioqrcode.data.vo.ProdutoVO;
+import com.devthiagofurtado.cardapioqrcode.data.vo.UsuarioVO;
 import com.devthiagofurtado.cardapioqrcode.security.jwt.JwtTokenProvider;
 import com.devthiagofurtado.cardapioqrcode.service.ProdutoService;
 import com.devthiagofurtado.cardapioqrcode.util.HeaderUtil;
@@ -98,6 +99,16 @@ public class ProdutoController {
     @GetMapping(value = "/tipo-produto", produces = {"application/json", "application/xml", "application/x-yaml"})
     public ResponseEntity<List<TipoProdutoVO>> listarTipoProdutos() {
         return new ResponseEntity<>(TipoProdutoVO.listar(), HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "Torna produto disponível ou indisponível.")
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProdutoVO> alternarDisponibilidade(@PathVariable(value = "id") Long id) {
+        String token = HeaderUtil.obterToken();
+        String user = tokenProvider.getUsername(token.substring(7, token.length()));
+        var vo = produtoService.disponibilidade(id, user);
+        vo.add(linkTo(methodOn(ProdutoController.class).buscarPorId(vo.getKey())).withSelfRel());
+        return new ResponseEntity<>(vo, HttpStatus.OK);
     }
 }
 
