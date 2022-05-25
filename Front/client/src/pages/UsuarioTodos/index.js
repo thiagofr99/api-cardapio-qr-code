@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
 
 import Loading from '../../layout/Loading';
+import Cabechalho from "../../layout/Cabecalho";
 
 export default function UsuarioTodos(){
     
@@ -24,14 +25,16 @@ export default function UsuarioTodos(){
 
     const [totalPages, setTotalPages] = useState();
     
-    const accessToken = sessionStorage.getItem('accessToken');
+    const accessToken = sessionStorage.getItem('accessToken');    
+    const usuarioLogado = sessionStorage.getItem('username');    
+    const cargo = sessionStorage.getItem('permission');    
 
     const history = useHistory();
 
     const [loadOn, setLoadOn] = useState(false);
 
     async function proximaPage(){
-        
+        setLoadOn(true);
         let pagina = paginacao.number+1;
         setPage(pagina);
         buscarTodosPorNome(pagina);  
@@ -39,7 +42,7 @@ export default function UsuarioTodos(){
     }
 
     async function anteriorPage(){
-        
+        setLoadOn(true);
         let pagina = paginacao.number-1;
         setPage(pagina);
         buscarTodosPorNome(pagina);        
@@ -64,11 +67,12 @@ export default function UsuarioTodos(){
                 setTotalPages(responses.data.page.totalPages);
             })
             
-      
+            setLoadOn(false);
           } catch (err){
             toast.error('Erro ao buscar Usuarios.', {
                 position: toast.POSITION.TOP_CENTER
               })    
+            setLoadOn(false);
           }
         
 
@@ -104,6 +108,12 @@ export default function UsuarioTodos(){
 
     }  
 
+    async function logout(){
+        sessionStorage.setItem('username', '');
+        sessionStorage.setItem('accessToken', '');
+        sessionStorage.setItem('permission', '');
+        history.push(`/`);        
+    }
  
     useEffect(()=> {
                 
@@ -126,29 +136,9 @@ export default function UsuarioTodos(){
 
     return (
         <div id="container">
-           
-            <header>
-                <nav>
-                    <ul>
-                        <li>
-                            <Link className="active" to="/usuario"> 
-                                Usuarios
-                            </Link>     
-                            </li>
-                            <li> <Link to="/empresa"> 
-                                Empresas
-                            </Link>     
-                        </li>                        
-                    </ul>                
-                    <div id="cabecalho" className="flex">
-                        <a className="linkedin-cab" href="https://www.linkedin.com/in/dev-thiago-furtado/">
-                            <FontAwesomeIcon icon={faLinkedin} className="linkedin" />
-                            <h2>@DEVTHIAGOFURTADO</h2>
-                        </a>                        
-                    </div>
-                    
-                </nav>
-            </header>
+           {loadOn? <Loading></Loading>:
+            <div>
+            <Cabechalho></Cabechalho>
             <body>                
 
                 <div id="lista-1">
@@ -196,6 +186,8 @@ export default function UsuarioTodos(){
                     </div> 
                
             </footer>
+            </div>
+}
         </div>
         
     );

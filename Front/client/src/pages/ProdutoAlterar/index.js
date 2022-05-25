@@ -8,6 +8,7 @@ import api from '../../services/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+import CabechalhoManage from "../../layout/CabecalhoManage";
 
 
 
@@ -125,25 +126,7 @@ export default function ProdutoAlterar(){
     return (
         <div id="container">
            
-            <header>
-                <nav>
-                    <ul>
-                        <li>                                
-                            </li>
-                            <li> <Link className="active" to="/manager"> 
-                                Empresas
-                            </Link>     
-                        </li>               
-                    </ul>                
-                    <div id="cabecalho" className="flex">
-                        <a className="linkedin-cab" href="https://www.linkedin.com/in/dev-thiago-furtado/">
-                            <FontAwesomeIcon icon={faLinkedin} className="linkedin" />
-                            <h2>@DEVTHIAGOFURTADO</h2>
-                        </a>                        
-                    </div>
-                    
-                </nav>
-            </header>
+            <CabechalhoManage></CabechalhoManage>
             <body>
                 <h1>Cadastro de Produtos.</h1>          
                 <div id="lista-1">                    

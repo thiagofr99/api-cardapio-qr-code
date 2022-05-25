@@ -8,6 +8,7 @@ import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-ic
 import api from '../../services/api'
 
 import './style.css';
+import CabechalhoManage from "../../layout/CabecalhoManage";
 
 export default function Manager(){
 
@@ -239,26 +240,7 @@ export default function Manager(){
     return(
         <div id="container">
            
-            <header>
-                <nav>
-                    <ul>
-                        <li>
-                            
-                            </li>
-                            <li> <Link className="active" to="/manager"> 
-                                Empresas
-                            </Link>     
-                        </li>                        
-                    </ul>                
-                    <div id="cabecalho" className="flex">
-                        <a className="linkedin-cab" href="https://www.linkedin.com/in/dev-thiago-furtado/">
-                            <FontAwesomeIcon icon={faLinkedin} className="linkedin" />
-                            <h2>@DEVTHIAGOFURTADO</h2>
-                        </a>                        
-                    </div>
-                    
-                </nav>
-            </header>
+            <CabechalhoManage></CabechalhoManage>
             <body>                
 
             <select id="permissao" className="input-select" name="select" value={empresaResponse} onChange={e=> setEmpresaResponse(e.target.value)}>

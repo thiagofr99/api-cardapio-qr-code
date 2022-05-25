@@ -1,31 +1,28 @@
 import React,{useState, useEffect} from "react";
-import { Link, useHistory} from "react-router-dom";
-import InputMask from "react-input-mask";
+import { useHistory} from "react-router-dom";
 
 import './style.css';
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import api from '../../services/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+
+import Loading from "../../layout/Loading";
+import CabechalhoEmpresa from "../../layout/CabecalhoEmpresa";
 
 
 
 export default function EmpresaTodos(){
-
-    const [permissionsReturn, setPermissionsReturn] = useState([]);
-    const [permissionsResponse, setPermissionsResponse] =useState([]);
-
-    const [empresaNome, setEmpresaNome] = useState('');
-    const [cepMask, setCepMask] = useState('');
-    const [numero, setNumero] = useState('');    
-    const [complemento, setComplemento] = useState('');
-
     
     const [empresas, setEmpresas] = useState([]);  
 
-    const accessToken = sessionStorage.getItem('accessToken');
+    const accessToken = sessionStorage.getItem('accessToken'); 
     
+    const [loadOn, setLoadOn] = useState(false);
 
     const history = useHistory();
 
@@ -38,7 +35,10 @@ export default function EmpresaTodos(){
             sessionStorage.setItem('gerente', 'false');
             history.push(`/update/${id}`)
         } catch ( erro ){
-            alert('Edit failed! Try again.')
+            toast.error('Erro ao editar empresa.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);
         }
     }
 
@@ -47,17 +47,19 @@ export default function EmpresaTodos(){
             sessionStorage.setItem('gerente', 'true');
             history.push(`/update/${id}`)
         } catch ( erro ){
-            alert('Edit failed! Try again.')
+            toast.error('Erro ao acessar opção de gerentes.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);
         }
     }
 
-
     async function findAllByEmpresaName(){
-
+        setLoadOn(true);
 
         try{
-    
-            const response = await api.get('api/empresa/v1/findAllByEmpresaName/?page=0&limit=10&ASC',{                
+
+            await api.get('api/empresa/v1/findAllByEmpresaName/?page=0&limit=10&ASC',{                
               headers:{
                   Authorization: `Bearer ${accessToken}`
               }
@@ -65,17 +67,23 @@ export default function EmpresaTodos(){
                 setEmpresas(responses.data._embedded.empresaVoes)
             })
             
-              
-            alert('Busca realizada com sucesso.')          
-      
+            toast.success('Busca realizada com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);      
+
           } catch (err){
-            alert('Erro ao buscar registros!'+err)
+            toast.error('Erro ao buscar empresas.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);
           }
         
 
     }  
 
     async function deleteEmpresa(id) {
+        setLoadOn(true);
 
         var resultado = window.confirm("Deseja excluir o item selecionado?");
 
@@ -87,10 +95,16 @@ export default function EmpresaTodos(){
                     }
                 })
                 
-                alert('Empresa deletada com sucesso!')
+                toast.success('Empresa deletada com sucesso.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
+                  setLoadOn(false);
                 setEmpresas(empresas.filter(emp => emp.id !== id))
             } catch (err) {
-                alert('Delete failed! Try again.');
+                toast.error('Erro ao deletar empresa.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
+                  setLoadOn(false);
             }
         }
             
@@ -98,14 +112,12 @@ export default function EmpresaTodos(){
         
     }
     
-    async function desabilitar(id){        
+    async function desabilitar(id){
         
         var confirm = window.confirm("Deseja realmente desabilitar a empresa?")
         if(confirm){
-
-        
+        setLoadOn(true)
             try{
-                
 
                 await api.patch(`/api/empresa/v1/desabilitar/${id}`, {
                     //dados que serão atualizados
@@ -116,40 +128,26 @@ export default function EmpresaTodos(){
                 })
                 
                 
-                alert('Desabilitado com sucesso!')
+                toast.success('Empresa desabilitada com sucesso.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
+                  setLoadOn(false);
                 findAllByEmpresaName();          
         
             } catch (err){
-                alert('Erro ao renovar registro!'+err)
+                toast.error('Erro ao desabilitar empresa.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
+                  setLoadOn(false);
             }
         }
     }  
 
     return (
         <div id="container">
-           
-            <header>
-                <nav>
-                    <ul>
-                        <li>
-                            <Link to="/usuario"> 
-                                Usuarios
-                            </Link>     
-                            </li>
-                            <li> <Link className="active" to="/empresa"> 
-                                Empresas
-                            </Link>     
-                        </li>               
-                    </ul>                
-                    <div id="cabecalho" className="flex">
-                        <a className="linkedin-cab" href="https://www.linkedin.com/in/dev-thiago-furtado/">
-                            <FontAwesomeIcon icon={faLinkedin} className="linkedin" />
-                            <h2>@DEVTHIAGOFURTADO</h2>
-                        </a>                        
-                    </div>
-                    
-                </nav>
-            </header>
+           {loadOn? <Loading></Loading>:
+            <div>
+            <CabechalhoEmpresa></CabechalhoEmpresa>
             <body>          
                 <div id="lista-1">
                 <table>
@@ -199,6 +197,8 @@ export default function EmpresaTodos(){
                     </div> 
                
             </footer>
+            </div>
+}
         </div>
         
     );

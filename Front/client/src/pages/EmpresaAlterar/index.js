@@ -1,15 +1,20 @@
 import React,{useState, useEffect} from "react";
-import { Link, useHistory, useParams} from "react-router-dom";
+import { useHistory, useParams} from "react-router-dom";
 import InputMask from "react-input-mask";
 
 import './style.css';
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import imgEmpresa from '../../assets/default.jpg'
 
 import api from '../../services/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+
+import CabechalhoEmpresa from "../../layout/CabecalhoEmpresa";
 
 
 
@@ -27,10 +32,7 @@ export default function EmpresaAlterar(){
     const [userFullName, setUserFullName] = useState('');
 
     const [manangers, setManangers] = useState(['']);
-    const [mananger, setMananger] = useState('');
-
-    
-    const [empresa, setEmpresa] = useState();  
+    const [mananger, setMananger] = useState('');    
 
     const accessToken = sessionStorage.getItem('accessToken');
     const gerente = sessionStorage.getItem('gerente');
@@ -75,11 +77,13 @@ export default function EmpresaAlterar(){
             setImageUrl(response.data.imageUrl);
             setAtualizacao(dataAtualizacao);
             setCadastro(dataCadastro);
-            response.data.user===null || response.data.user===''? setUserFullName(''): setUserFullName(response.data.user.fullName);
-            alert('Busca realizada com sucesso.')          
+            response.data.user===null || response.data.user===''? setUserFullName(''): setUserFullName(response.data.user.fullName);                        
       
           } catch (err){
-            alert('Erro ao buscar registros!'+err)
+            toast.error('Erro ao carregar dados.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+            history.push(`/empresa`);
           }
         
 
@@ -111,7 +115,9 @@ export default function EmpresaAlterar(){
                 }
             });
                 
-            alert('Salvo com sucesso.')          
+            toast.success('Salvo com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })        
             setEmpresaNome('');
             setCepMask('');
             setComplemento('');
@@ -121,7 +127,9 @@ export default function EmpresaAlterar(){
 
             history.push('/empresa');
             } catch (err){
-            alert('Erro ao salvar registro!')
+                toast.error('Erro ao salvar dados.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
             }
         }
         
@@ -159,28 +167,7 @@ export default function EmpresaAlterar(){
     return (
         <div id="container">
            
-            <header>
-                <nav>
-                    <ul>
-                        <li>
-                            <Link to="/usuario"> 
-                                Usuarios
-                            </Link>     
-                            </li>
-                            <li> <Link className="active" to="/empresa"> 
-                                Empresas
-                            </Link>     
-                        </li>               
-                    </ul>                
-                    <div id="cabecalho" className="flex">
-                        <a className="linkedin-cab" href="https://www.linkedin.com/in/dev-thiago-furtado/">
-                            <FontAwesomeIcon icon={faLinkedin} className="linkedin" />
-                            <h2>@DEVTHIAGOFURTADO</h2>
-                        </a>                        
-                    </div>
-                    
-                </nav>
-            </header>
+           <CabechalhoEmpresa></CabechalhoEmpresa>
             <body>
                 <h1>Cadastro de Empresas.</h1>          
                 <div id="lista-1">                    
@@ -204,7 +191,7 @@ export default function EmpresaAlterar(){
                     <div className="empresa-alterar-2">
                         <img className="image-empresa" src={imageUrl===null || imageUrl==='' ? imgEmpresa : imageUrl} alt="" />                        
                         {gerente==='true' && userFullName==='' ?                            
-                            <select id="permissao" className="input-select" name="select" value={mananger} onChange={e=> setMananger(e.target.value)}>
+                            <select id="permissao" className="input-select-2" name="select" value={mananger} onChange={e=> setMananger(e.target.value)}>
                             <option value="">Selecione um gerente!</option>
                             {manangers.map( p=>(
                                     <option value={p.userName}>{p.fullName}</option>                                     

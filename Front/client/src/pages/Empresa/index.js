@@ -1,43 +1,39 @@
 import React,{useState, useEffect} from "react";
-import { Link, useHistory} from "react-router-dom";
+import { useHistory} from "react-router-dom";
 import InputMask from "react-input-mask";
 
 import './style.css';
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import api from '../../services/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
-
+import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+import Loading from '../../layout/Loading';
+import CabechalhoEmpresa from "../../layout/CabecalhoEmpresa";
 
 
 export default function Empresa(){
-
-    const [permissionsReturn, setPermissionsReturn] = useState([]);
-    const [permissionsResponse, setPermissionsResponse] =useState([]);
-
+    
     const [empresaNome, setEmpresaNome] = useState('');
     const [cepMask, setCepMask] = useState('');
     const [numero, setNumero] = useState('');    
     const [complemento, setComplemento] = useState('');
-
     
-    const [empresas, setEmpresas] = useState([]);
-
+    const [loadOn, setLoadOn] = useState(false);
     
     const [empresaParams, setEmpresaParams] =  useState('');        
 
-    const accessToken = sessionStorage.getItem('accessToken');
-    
+    const accessToken = sessionStorage.getItem('accessToken');       
 
     const history = useHistory();
 
-    useEffect(()=> {
-    
-    },[]);
-
     async function salvar(e){
         e.preventDefault();
+
+        setLoadOn(true);
 
         var cep = cepMask.replace('-','');
     
@@ -55,14 +51,22 @@ export default function Empresa(){
                 Authorization: `Bearer ${accessToken}`
             }
           });
-            
-          alert('Salvo com sucesso.')          
+          
+          toast.success('Empresa salva com sucesso.', {
+            position: toast.POSITION.TOP_CENTER
+          })
+                  
           setEmpresaNome('');
           setCepMask('');
           setComplemento('')
           setNumero('');
+          setLoadOn(false);
         } catch (err){
-          alert('Erro ao salvar registro!')
+            toast.error('Erro ao salvar registro.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+
+            setLoadOn(false);
         }
     
       };
@@ -76,53 +80,12 @@ export default function Empresa(){
         }
 
     }  
-    
-    async function renovar(id){        
-        
-        try{
-            
-            await api.put(`auth/${id}`,{
-                headers:{
-                    Authorization: `Bearer ${accessToken}`
-                }
-            }
-            )
-            
-              
-            alert('Renovado com sucesso!')          
-      
-          } catch (err){
-            alert('Erro ao renovar registro!'+err)
-          }
-        
-
-    }  
 
     return (
         <div id="container">
-           
-            <header>
-                <nav>
-                    <ul>
-                        <li>
-                            <Link to="/usuario"> 
-                                Usuarios
-                            </Link>     
-                            </li>
-                            <li> <Link className="active" to="/empresa"> 
-                                Empresas
-                            </Link>     
-                        </li>               
-                    </ul>                
-                    <div id="cabecalho" className="flex">
-                        <a className="linkedin-cab" href="https://www.linkedin.com/in/dev-thiago-furtado/">
-                            <FontAwesomeIcon icon={faLinkedin} className="linkedin" />
-                            <h2>@DEVTHIAGOFURTADO</h2>
-                        </a>                        
-                    </div>
-                    
-                </nav>
-            </header>
+        {loadOn? <Loading></Loading>:
+        <div>   
+            <CabechalhoEmpresa></CabechalhoEmpresa>
             <body>            
                 <div id="consulta-1">
                     <div className="row-1">
@@ -171,6 +134,8 @@ export default function Empresa(){
                     </div> 
                
             </footer>
+        </div>
+}    
         </div>
         
     );

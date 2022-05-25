@@ -1,6 +1,5 @@
 import React,{useState, useEffect} from "react";
-import { Link, useHistory, useParams} from "react-router-dom";
-import InputMask from "react-input-mask";
+import { useHistory, useParams} from "react-router-dom";
 
 import './style.css';
 
@@ -8,20 +7,14 @@ import './style.css';
 import api from '../../services/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
 
-
+import CabechalhoEmpresa from "../../layout/CabecalhoEmpresa";
 
 export default function EmpresaConsulta(){
 
 
     const {nome} = useParams();
-
-    const [empresaNome, setEmpresaNome] = useState('');
-    const [cepMask, setCepMask] = useState('');
-    const [numero, setNumero] = useState('');    
-    const [complemento, setComplemento] = useState('');
-
     
     const [empresas, setEmpresas] = useState([]);  
 
@@ -137,28 +130,7 @@ export default function EmpresaConsulta(){
     return (
         <div id="container">
            
-            <header>
-                <nav>
-                    <ul>
-                        <li>
-                            <Link to="/usuario"> 
-                                Usuarios
-                            </Link>     
-                            </li>
-                            <li> <Link className="active" to="/empresa"> 
-                                Empresas
-                            </Link>     
-                        </li>               
-                    </ul>                
-                    <div id="cabecalho" className="flex">
-                        <a className="linkedin-cab" href="https://www.linkedin.com/in/dev-thiago-furtado/">
-                            <FontAwesomeIcon icon={faLinkedin} className="linkedin" />
-                            <h2>@DEVTHIAGOFURTADO</h2>
-                        </a>                        
-                    </div>
-                    
-                </nav>
-            </header>
+            <CabechalhoEmpresa></CabechalhoEmpresa>
             <body>          
                 <div id="lista-1">
                 <table>

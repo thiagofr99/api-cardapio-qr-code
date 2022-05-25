@@ -358,6 +358,17 @@ header {
     
 }
 
+.input-select-2{    
+    font-size: 24px;
+    height: 60px;
+    border-radius: 10px;
+    margin-left: 5px;
+    text-align: left;
+    width: 20%;
+    margin-top: 15px;
+    
+}
+
 #lista-1{  
     margin-top: 10px;      
     width: 1080px;
@@ -599,3 +610,23 @@ li{
       align-items: center;
   }
   
+  .texto-bemvindo{
+      margin-left: 10%;
+      margin-top: 5px;
+  }
+
+  .button-sair{
+      font-size: 12px;
+      margin-left: 15px;
+      margin-top: 7px;
+      border: none;
+      width: 5%;
+      height: 20px;
+      background-color: #251FC5;
+      color: white;
+  }
+
+  .button-sair:hover{
+    background-color: #090835;
+    color: rgb(135, 135, 135);
+  }
