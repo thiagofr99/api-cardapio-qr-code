@@ -22,7 +22,7 @@ export default function Produto(){
     const[produtoNome, setProdutoNome] = useState('');
     const[valor, setValor] = useState('');
 
-
+    const history = useHistory();
 
     const accessToken = sessionStorage.getItem('accessToken');
 
@@ -39,6 +39,10 @@ export default function Produto(){
         })
         
     },[]);
+
+    async function alterar(id){
+        history.push(`/editar/${id}`);
+    }
 
     async function buscarPorCardapio(){
         api.get(`api/produto/v1/findAllByCardapio/${cdpId}`, {
@@ -198,7 +202,9 @@ export default function Produto(){
                                 <td> {Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(p.valorProduto)} </td>
                                 <td> {p.observacao} </td>
                                 <td>{ p.dataAtualizacao ===null || p.dataAtualizacao ==='' ? Intl.DateTimeFormat('pt-BR').format(new Date(p.dataCadastro)):Intl.DateTimeFormat('pt-BR').format(new Date(p.dataAtualizacao))}</td>
-                                <td>{ p.disponivel===true ? <button className="input-button-patch" onClick={()=> alternarDisponivel(p.id)} >Disponível</button>  : <button className="input-button-deletar" onClick={()=> alternarDisponivel(p.id)} >Indisponível</button>}
+                                <td>{ p.disponivel===true ? <button className="input-button-patch" onClick={()=> alternarDisponivel(p.id)} >Disponível</button> 
+                                                            : <button className="input-button-deletar" onClick={()=> alternarDisponivel(p.id)} >Indisponível</button>}
+                                    { p.disponivel===true ? <button className="input-button-alterar" onClick={()=> alterar(p.id)} >Alterar</button> :" "}
                                     <button className="input-button-deletar" onClick={()=> excluir(p.id)} >Excluir</button>
                                 </td>
                             </tr>  

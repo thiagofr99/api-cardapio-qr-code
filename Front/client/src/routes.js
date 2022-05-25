@@ -11,6 +11,7 @@ import EmpresaTodos from './pages/EmpresaTodos';
 import EmpresaBusca from './pages/EmpresaConsulta'
 import EmpresaAlterar from './pages/EmpresaAlterar';
 import Produto from './pages/Produto';
+import ProdutoAlterar from './pages/ProdutoAlterar';
 
 export default function Routes() {
     return (
@@ -26,6 +27,7 @@ export default function Routes() {
                 <Route path='/buscas/:nome' exact component={EmpresaBusca}/>
                 <Route path='/update/:myId' exact component={EmpresaAlterar}/>
                 <Route path='/produto/:cdpId' exact component={Produto}/>
+                <Route path='/editar/:idProduto' exact component={ProdutoAlterar}/>
             </Switch>
         </BrowserRouter>
     );

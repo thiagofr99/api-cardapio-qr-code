@@ -75,7 +75,9 @@ public class ProdutoService {
 
         userService.validarUsuarioGerente(user, produto.getCardapio().getEmpresa());
 
-        return DozerConverter.parseObject(produto, ProdutoVO.class);
+        var vo = DozerConverter.parseObject(produto, ProdutoVO.class);
+        vo.setCardapioId(produto.getCardapio().getId());
+        return vo;
     }
 
     private Produto findByIdEntity(Long id) {
