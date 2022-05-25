@@ -5,10 +5,13 @@ import './style.css';
 
 import api from '../../services/api'
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
 
-
+import Loading from '../../layout/Loading';
 
 export default function UsuarioConsulta(){
 
@@ -18,7 +21,11 @@ export default function UsuarioConsulta(){
 
     const [page, setPage] = useState(0);
 
-    //const [sizeObject, setSizeObject] = useState();
+    const [paginacao, setPaginacao] = useState();
+
+    const [totalPages, setTotalPages] = useState();
+
+    const [loadOn, setLoadOn] = useState(false);
     
     const accessToken = sessionStorage.getItem('accessToken');
 
@@ -40,35 +47,39 @@ export default function UsuarioConsulta(){
                 direction: 'asc'
               }
             }).then(responses=> {
-                setUsers(responses.data._embedded.usuarioVoes)
+                setUsers(responses.data._embedded.usuarioVoes);
+                setPaginacao(responses.data.page);
+                setTotalPages(responses.data.page.totalPages);
             })                      
             
       
           } catch (err){
-            alert('Erro ao buscar registros!'+err)
+            toast.error('Erro ao buscar Usuarios.', {
+                position: toast.POSITION.TOP_CENTER
+              })            
           }
         
 
     }  
 
     async function proximaPage(){
-        var pagina=0;    
-        page === 0? pagina=1: pagina=page;
-        pagina = page > 0? pagina+1 : pagina;
+
+        let pagina = paginacao.number+1;
         setPage(pagina);
-        buscarTodosPorNome(pagina);        
+        buscarTodosPorNome(pagina);       
     }
 
     async function anteriorPage(){
-        var newPage;
-        page > 0 ? newPage=page: alert('erro');  
-        newPage = newPage-1;      
-        setPage(newPage);
-        buscarTodosPorNome(newPage);        
+       
+        let pagina = paginacao.number-1;
+        setPage(pagina);
+        buscarTodosPorNome(pagina);        
     }
     
     async function renovar(id){        
         
+        setLoadOn(true);
+
         try{
             
 
@@ -81,11 +92,16 @@ export default function UsuarioConsulta(){
               })
             
               
-            alert('Renovado com sucesso!')
+              toast.success('Licença renovada com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })
             buscarTodosPorNome();          
-      
+            setLoadOn(false);
           } catch (err){
-            alert('Erro ao renovar registro!'+err)
+            toast.error('Erro ao renovar licença.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);
           }
 
     }  
@@ -93,10 +109,18 @@ export default function UsuarioConsulta(){
  
     useEffect(()=> {
         try{
+            setLoadOn(true)
             buscarTodosPorNome();
-            alert('Busca realizada com sucesso.')
+            toast.success('Busca realizada com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+            setLoadOn(false);
+
         } catch (erro){
-            alert("erro:"+erro)
+            toast.error('Erro ao realizar busca.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+            history.push(`/usuario/`)
         }
         
         
@@ -104,7 +128,8 @@ export default function UsuarioConsulta(){
 
     return (
         <div id="container">
-           
+            {loadOn? <Loading></Loading>:
+            <div>
             <header>
                 <nav>
                     <ul>
@@ -153,7 +178,7 @@ export default function UsuarioConsulta(){
                 <div className="nav-page">
                         {page===0 ? '' : <button className="button-previous" onClick={anteriorPage}>{'<<Anterior'}</button>}      
                         <h3>{page+1}</h3> 
-                        { users.length < 9 ? '': <button className="button-next" onClick={proximaPage}>{'Próxima>>'}</button>} 
+                        { page+1== totalPages ? '': <button className="button-next" onClick={proximaPage}>{'Próxima>>'}</button>} 
                 </div>              
 
             </body>
@@ -174,6 +199,8 @@ export default function UsuarioConsulta(){
                     </div> 
                
             </footer>
+            </div>
+}
         </div>
         
     );

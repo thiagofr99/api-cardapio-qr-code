@@ -3,11 +3,14 @@ import { Link, useHistory} from "react-router-dom";
 
 import './style.css';
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import api from '../../services/api'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
-
+import Loading from '../../layout/Loading';
 
 
 export default function Usuario(){
@@ -18,11 +21,10 @@ export default function Usuario(){
     const [userName, setUsername] = useState('');
     const [fullName, setFullName] = useState('');
     const [password, setPassword] = useState('');    
-
     
-    const [users, setUsers] = useState([]);
 
-    
+    const [loadOn, setLoadOn] = useState(false);
+
     const [nome, setNome] =  useState('');    
     
     
@@ -47,7 +49,7 @@ export default function Usuario(){
 
     async function salvar(e){
         e.preventDefault();
-
+        setLoadOn(true);
         var permissions = [permissionsResponse];
     
         const data = {
@@ -65,15 +67,20 @@ export default function Usuario(){
             }
           });
             
-          alert('Salvo com sucesso.')
-
+          toast.success('Usuario salvo com sucesso.', {
+            position: toast.POSITION.TOP_CENTER
+          })
+        setLoadOn(false);
         setFullName('');
         setPassword('');
         setUsername('');
         setPermissionsResponse([]);          
     
         } catch (err){
-          alert('Erro ao salvar registro!')
+            toast.error('Erro ao salvar usuário.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);
         }
     
       };
@@ -89,8 +96,10 @@ export default function Usuario(){
     }  
     
     return (
+        
         <div id="container">
-           
+        {loadOn? <Loading></Loading>:
+        <div>
             <header>
                 <nav>
                     <ul>
@@ -148,7 +157,8 @@ export default function Usuario(){
                         </form>
                     </div>
                 </div>
-
+                <div className="load-1">               
+                </div>  
             </body>
             <footer>
                 <div className="dados-pessoais">
@@ -167,6 +177,9 @@ export default function Usuario(){
                     </div> 
                
             </footer>
+
+        </div>            
+}
         </div>
         
     );

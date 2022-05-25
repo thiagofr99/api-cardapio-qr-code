@@ -1,4 +1,4 @@
-import './Loading.module.css';
+import './style.css'
 
 import load from '../assets/Glossy-Loading-Images/256x256.svg'
 

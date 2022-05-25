@@ -3,12 +3,16 @@ import { useHistory} from 'react-router-dom';
 
 import './style.css';
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import perfil from '../../assets/perfil.png'
 
 import logo from '../../assets/Logo Transparente.png'
 
 import api from '../../services/api'
 import Loading from '../../layout/Loading';
+
 
 export default function Login() {
 
@@ -18,7 +22,7 @@ export default function Login() {
   const [loadOn, setLoadOn] = useState(false);
 
   const history = useHistory();
-
+  
   async function login(e){
     e.preventDefault();
 
@@ -44,9 +48,12 @@ export default function Login() {
         history.push('/manager')
       } 
 
-    } catch (err){
-      setLoadOn(false);
-      alert('Login failed! Try agains!')
+    } catch (err){      
+      toast.error('Login falhou! Tente novamente!', {
+        position: toast.POSITION.TOP_CENTER
+      })
+      setLoadOn(false);      
+      //alert('Login failed! Try agains!')
     }
 
   };

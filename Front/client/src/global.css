@@ -591,3 +591,11 @@ li{
     width: 90%;
     margin-top: 5px;
   }
+
+  .load-1{        
+      margin-top: 10px;      
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+  
