@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useHistory} from "react-router-dom";
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLinkedin } from '@fortawesome/free-brands-svg-icons'
+import { faLinkedin} from '@fortawesome/free-brands-svg-icons'
 
 
 
@@ -20,6 +20,10 @@ export default function CabechalhoEmpresa(){
         history.push(`/`);        
     }
 
+    async function voltar(){
+        history.goBack();
+    }
+
     return (
         <div>
             <header>
@@ -32,7 +36,7 @@ export default function CabechalhoEmpresa(){
                             </li>
                             <li> <Link className="active" to="/empresa"> 
                                 Empresas
-                            </Link>     
+                            </Link>                                                                                       
                         </li>                        
                     </ul>                
                     <div id="cabecalho" className="flex">
@@ -41,7 +45,8 @@ export default function CabechalhoEmpresa(){
                             <h2>@DEVTHIAGOFURTADO</h2>
                         </a>       
                         <h3 className="texto-bemvindo">Seja bem vindo {usuarioLogado+" - "+cargo}</h3>     
-                        <button className="button-sair" onClick={logout}> Sair </button>            
+                        <button className="button-sair" onClick={logout}> Sair </button>    
+                        <button className="button-voltar" onClick={voltar}> {"<< "+ "Voltar"}</button>        
                     </div>
                     
                 </nav>

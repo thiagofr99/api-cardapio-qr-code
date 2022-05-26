@@ -20,6 +20,10 @@ export default function Cabechalho(){
         history.push(`/`);        
     }
 
+    async function voltar(){
+        history.goBack();
+    }
+
     return (
         <div>
             <header>
@@ -42,6 +46,7 @@ export default function Cabechalho(){
                         </a>       
                         <h3 className="texto-bemvindo">Seja bem vindo {usuarioLogado+" - "+cargo}</h3>     
                         <button className="button-sair" onClick={logout}> Sair </button>            
+                        <button className="button-voltar" onClick={voltar}> {"<< "+ "Voltar"}</button>        
                     </div>
                     
                 </nav>

@@ -108,18 +108,12 @@ export default function UsuarioTodos(){
 
     }  
 
-    async function logout(){
-        sessionStorage.setItem('username', '');
-        sessionStorage.setItem('accessToken', '');
-        sessionStorage.setItem('permission', '');
-        history.push(`/`);        
-    }
  
     useEffect(()=> {
                 
         try{
             setLoadOn(true)
-            buscarTodosPorNome();
+            buscarTodosPorNome(0);
             toast.success('Busca realizada com sucesso.', {
                 position: toast.POSITION.TOP_CENTER
               })

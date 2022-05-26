@@ -21,6 +21,12 @@ export default function EmpresaTodos(){
     
     const [empresas, setEmpresas] = useState([]);  
 
+    const [page, setPage] = useState(0);
+
+    const [paginacao, setPaginacao] = useState();
+
+    const [totalPages, setTotalPages] = useState();
+
     const accessToken = sessionStorage.getItem('accessToken'); 
     
     const [loadOn, setLoadOn] = useState(false);
@@ -60,11 +66,24 @@ export default function EmpresaTodos(){
     const history = useHistory();
 
     useEffect(()=> {
-        findAllByEmpresaName();
-        toast.success('Busca realizada com sucesso.', {
-            position: toast.POSITION.TOP_CENTER
-          })
+        findAllByEmpresaName(0, true);        
     },[]);
+
+    
+    async function proximaPage(){
+        setLoadOn(true);
+        let pagina = paginacao.number+1;
+        setPage(pagina);
+        findAllByEmpresaName(pagina,false);  
+              
+    }
+
+    async function anteriorPage(){
+        setLoadOn(true);
+        let pagina = paginacao.number-1;
+        setPage(pagina);
+        findAllByEmpresaName(pagina,false);        
+    }
 
     async function editEmpresa(id){
         try{
@@ -90,24 +109,37 @@ export default function EmpresaTodos(){
         }
     }
 
-    async function findAllByEmpresaName(){
+    async function findAllByEmpresaName(pagin, initial){
         setLoadOn(true);
 
         try{
 
-            await api.get('api/empresa/v1/findAllByEmpresaName/?page=0&limit=10&ASC',{                
-              headers:{
-                  Authorization: `Bearer ${accessToken}`
-              }
+            await api.get('api/empresa/v1/findAllByEmpresaName/',{                                
+                headers:{
+                    Authorization: `Bearer ${accessToken}`
+                },
+                params: {
+                  empresaName: '',
+                  page: pagin,
+                  limit: 8,
+                  direction: 'asc'
+                }
             }).then(responses=> {
-                setEmpresas(responses.data._embedded.empresaVoes)
+                setEmpresas(responses.data._embedded.empresaVoes);
+                setPaginacao(responses.data.page);
+                setTotalPages(responses.data.page.totalPages);
             })
             
+            if(initial){
+                toast.success('Busca realizada com sucesso', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
+            }
             
             setLoadOn(false);      
 
           } catch (err){
-            toast.error('Erro ao buscar empresas.', {
+            toast.error('Erro ao buscar empresas AQ.', {
                 position: toast.POSITION.TOP_CENTER
               })
               setLoadOn(false);
@@ -163,7 +195,7 @@ export default function EmpresaTodos(){
                 position: toast.POSITION.TOP_CENTER
               })
               setLoadOn(false);
-            findAllByEmpresaName();          
+            findAllByEmpresaName(page,false);          
     
         } catch (err){
             toast.error('Erro ao desabilitar empresa.', {
@@ -214,7 +246,11 @@ export default function EmpresaTodos(){
                                 ))}
                     
                 </table>
-
+                </div>
+                <div className="nav-page">
+                        {page===0 ? '' : <button className="button-previous" onClick={anteriorPage}>{'<<Anterior'}</button>}      
+                        <h3>{page+1}</h3>                         
+                        { page+1== totalPages ? '': <button className="button-next" onClick={proximaPage}>{'Próxima>>'}</button>} 
                 </div>
 
             </body>
