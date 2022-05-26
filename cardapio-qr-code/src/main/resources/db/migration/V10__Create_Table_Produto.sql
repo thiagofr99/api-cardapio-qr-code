@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS `produto` (
   	`id` bigint(20) NOT NULL AUTO_INCREMENT,
   	`produto_nome` varchar(255) DEFAULT NULL,         
-  	`valor_produto` decimal DEFAULT NULL,  
+  	`valor_produto` double DEFAULT NULL,
    `data_cadastro` date DEFAULT NULL,
 	`data_atualizacao` date DEFAULT NULL,
 	`disponivel` bit(1) DEFAULT NULL,

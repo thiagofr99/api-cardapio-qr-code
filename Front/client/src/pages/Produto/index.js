@@ -1,27 +1,66 @@
 import React,{useState, useEffect} from "react";
-import { Link, useHistory, useParams} from "react-router-dom";
-import FileDownload from "js-file-download";
+import {useHistory, useParams} from "react-router-dom";
+
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
 
 import api from '../../services/api'
 
 import './style.css';
 import CabechalhoManage from "../../layout/CabecalhoManage";
+import Dialog from "../../layout/DialogConfirm";
 
 export default function Produto(){
 
     const {cdpId} = useParams();
 
+    const [dialog, setDialog] = useState({
+        message: "",
+        isLoading: false,
+        //Update
+        nameProduct: "",
+        idProduct: "",
+        operation: ""
+      });
+
+    const handleDialog = (message, isLoading, nameProduct, idProduct, operation) => {
+    setDialog({
+        message,
+        isLoading,
+        //Update
+        nameProduct,
+        idProduct,
+        operation
+    });
+    };  
+
     const [produtos, setProdutos] = useState([]);
     const [tipo, setTipo] = useState([]);
     const [tipoResponse, setTipoResponse] = useState();
-    const [cardapios, setCardapios] = useState([]);
     const [observacao, setObservacao] = useState('');
     
     const[produtoNome, setProdutoNome] = useState('');
     const[valor, setValor] = useState('');
+    
+
+    
+
+    const areUSureDelete = (choose) => {
+        if (choose) {
+          dialog.operation==="delete" ? deleteProduct() :
+          disponibilityProduct();
+          
+          handleDialog("", false);
+        } else {
+          
+          handleDialog("", false);
+        }
+      };
+
 
     const history = useHistory();
 
@@ -45,6 +84,46 @@ export default function Produto(){
         history.push(`/editar/${id}`);
     }
 
+    async function deleteProduct(){
+        try {
+            await api.delete(`api/produto/v1/${dialog.idProduct}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+            
+            toast.success('Produto deletado com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })     
+            setProdutos(produtos.filter(c => c.id !== dialog.idProduct))
+        } catch (err) {
+            toast.error('Erro ao deletar produto.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+        }
+    }
+
+    async function disponibilityProduct(){
+        try {
+            await api.patch(`api/produto/v1/${dialog.idProduct}`,
+            {},
+            {    
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+            toast.success('Produto alterado com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })   
+            buscarPorCardapio();
+        } catch (err) {
+            toast.error('Erro ao alterar disponibilidade do produto.', {
+                position: toast.POSITION.TOP_CENTER
+              })   
+        }
+
+    }
+
     async function buscarPorCardapio(){
         api.get(`api/produto/v1/findAllByCardapio/${cdpId}`, {
             headers:{
@@ -56,51 +135,13 @@ export default function Produto(){
 
     }
 
-    async function excluir(id) {
-
-        var resultado = window.confirm("Deseja excluir o item selecionado?");
-
-        if(resultado==true){
-            try {
-                await api.delete(`api/produto/v1/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                })
-                
-                alert('Produto deletado com sucesso!')
-                setProdutos(cardapios.filter(c => c.id !== id))
-            } catch (err) {
-                alert('Delete failed! Try again.');
-            }
-        }
-            
-        
-        
+    async function excluir(id, nome) {
+        handleDialog("Deseja excluir o item selecionado?", true, nome, id, "delete");
     }    
 
-    async function alternarDisponivel(id) {
+    async function alternarDisponivel(id, nome) {
 
-        var resultado = window.confirm("Deseja alterar disponibilidade do item selecionado?");
-
-        if(resultado==true){
-            try {
-                await api.patch(`api/produto/v1/${id}`,
-                {},
-                {    
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                })
-                alert("Alterado com sucesso!");
-                buscarPorCardapio();
-            } catch (err) {
-                alert('Falha ao alterar.');
-            }
-        }
-            
-        
-        
+        handleDialog("Deseja alterar disponibilidade do item selecionado?", true, nome, id, "disponibilidade");
     }    
 
     async function salvar(e) {
@@ -130,10 +171,14 @@ export default function Produto(){
             setValor('');
             setTipoResponse('');
     
-            alert("Produto salvo com sucesso.")
+            toast.success('Produto salvo com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })   
             buscarPorCardapio();
         } catch( erro ){
-            alert("Erro ao salvar Produto "+ erro)
+            toast.error('Erro ao salvar produto.', {
+                position: toast.POSITION.TOP_CENTER
+              })   
         }
 
         
@@ -185,9 +230,9 @@ export default function Produto(){
                                 <td> {p.observacao} </td>
                                 <td>{ p.dataAtualizacao ===null || p.dataAtualizacao ==='' ? Intl.DateTimeFormat('pt-BR').format(new Date(p.dataCadastro)):Intl.DateTimeFormat('pt-BR').format(new Date(p.dataAtualizacao))}</td>
                                 <td>{ p.disponivel===true ? <button className="input-button-patch" onClick={()=> alternarDisponivel(p.id)} >Disponível</button> 
-                                                            : <button className="input-button-deletar" onClick={()=> alternarDisponivel(p.id)} >Indisponível</button>}
+                                                            : <button className="input-button-deletar" onClick={()=> alternarDisponivel(p.id, p.produtoNome)} >Indisponível</button>}
                                     { p.disponivel===true ? <button className="input-button-alterar" onClick={()=> alterar(p.id)} >Alterar</button> :" "}
-                                    <button className="input-button-deletar" onClick={()=> excluir(p.id)} >Excluir</button>
+                                    <button className="input-button-deletar" onClick={()=> excluir(p.id, p.produtoNome)} >Excluir</button>
                                 </td>
                             </tr>  
                     
@@ -214,6 +259,12 @@ export default function Produto(){
                     </div> 
                
             </footer>
+            {dialog.isLoading && (<Dialog
+                //Update
+                nameProduct={dialog.nameProduct}
+                onDialog={areUSureDelete}
+                message={dialog.message}
+            />)}
         </div>
     );
 }

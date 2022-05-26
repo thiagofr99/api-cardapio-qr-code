@@ -1,14 +1,18 @@
 import React,{useState, useEffect} from "react";
-import { Link, useHistory, useParams} from "react-router-dom";
-import InputMask from "react-input-mask";
+import { useHistory, useParams} from "react-router-dom";
+
 
 import './style.css';
 
 import api from '../../services/api'
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
+import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
 import CabechalhoManage from "../../layout/CabecalhoManage";
+import Dialog from "../../layout/DialogConfirm";
 
 
 
@@ -30,7 +34,55 @@ export default function ProdutoAlterar(){
     const accessToken = sessionStorage.getItem('accessToken');    
     
     const history = useHistory();
+
+    const [data, setData] = useState({
+        id: 0,
+        valorProduto: 0,
+        tipoProdutoVO: "", 
+        produtoNome: "",
+        observacao: "",
+        cardapioId: "",
+        disponivel: true
+    })
+
+    const handleData = (id, valorProduto, tipoProdutoVO, produtoNome, observacao, cardapioId, disponivel) => {
+        setData({
+            id,
+            valorProduto,
+            //Update
+            tipoProdutoVO,
+            produtoNome,
+            observacao,
+            cardapioId,
+            disponivel
+        });
+    };
+
+    const [dialog, setDialog] = useState({
+        message: "",
+        isLoading: false,
+        //Update
+        nameProduct: ""   
+      });
+
+    const handleDialog = (message, isLoading, nameProduct) => {
+    setDialog({
+        message,
+        isLoading,
+        //Update
+        nameProduct
+    });
+    };
     
+    const areUSure = (choose) => {
+        if (choose) {
+          update();
+          handleDialog("", false);
+        } else {
+          
+          handleDialog("", false);
+        }
+      };
 
     useEffect(()=> {
         findProdutoById();
@@ -68,11 +120,13 @@ export default function ProdutoAlterar(){
             setCardapioId(response.data.cardapioId);
             setDisponivel(response.data.disponivel);
             setAtualizacao(dataAtualizacao);
-            setCadastro(dataCadastro);           
-            alert('Busca realizada com sucesso.')          
+            setCadastro(dataCadastro);                       
       
           } catch (err){
-            alert('Erro ao buscar registros!'+err)
+            toast.error('Erro ao carregar dados do produto.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              history.push(`/manager/`);
           }
         
 
@@ -81,24 +135,17 @@ export default function ProdutoAlterar(){
     async function salvar(e){
         e.preventDefault();
 
-        var confirm = window.confirm('Deseja salvar os novos dados?')
+        let valorProduto = valor.replace(",",".");
+        var id = idProduto;
 
-        if(confirm){            
+        handleData(id, valorProduto, tipoProdutoVO, produtoNome, observacao, cardapioId, disponivel);                
         
-            let valorProduto = valor.replace(",",".");
-            var id = idProduto;
+        handleDialog("Deseja realmente salvar o Produto?",true, produtoNome)
+    
+    };
 
-            const data = {
-                id,
-                valorProduto,
-                tipoProdutoVO,
-                produtoNome,
-                observacao,
-                cardapioId,
-                disponivel
-            }
-        
-            try{
+    async function update(){
+        try{
         
             await api.put('api/produto/v1/atualizar',data,{
                 headers:{
@@ -106,7 +153,9 @@ export default function ProdutoAlterar(){
                 }
             });
                 
-            alert('Salvo com sucesso.')          
+            toast.success('Produto salvo com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })                  
             setProdutoNome('');
             setValor('');
             setTipoProdutoVO('');
@@ -114,14 +163,15 @@ export default function ProdutoAlterar(){
             setAtualizacao('');
             setCadastro('');
 
-            history.push('/produto');
+            history.push('/manager/');
             } catch (err){
-            alert('Erro ao salvar registro!')
+                toast.error('Erro ao salvar dados do produto.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
+                  history.push(`/manager/`);
             }
-        }
-        
-    
-    };
+    }    
+
 
     return (
         <div id="container">
@@ -134,7 +184,7 @@ export default function ProdutoAlterar(){
                         <h3>Nome Produto:</h3>
                         <input type="text" value={produtoNome} className="" disabled={false} onChange={e=>setProdutoNome(e.target.value)} />
                         <h3>Valor Produto:</h3>
-                        <input type="number" className={""} disabled={false}  value={valor} onChange={e=>setValor(e.target.value)} />
+                        <input type="text" className={""} disabled={false}  value={valor} onChange={e=>setValor(e.target.value)} />
                         <h3>Observação:</h3>
                         <input type="text" className={""}  value={observacao} disabled={false} onChange={e=>setObservacao(e.target.value)} />
                         <h3>Tipo de Produto:</h3>
@@ -181,6 +231,12 @@ export default function ProdutoAlterar(){
                     </div> 
                
             </footer>
+            {dialog.isLoading && (<Dialog
+                //Update
+                nameProduct={dialog.nameProduct}
+                onDialog={areUSure}
+                message={dialog.message}
+            />)}
         </div>
         
     );

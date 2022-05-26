@@ -13,6 +13,7 @@ import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
 
 import Loading from "../../layout/Loading";
 import CabechalhoEmpresa from "../../layout/CabecalhoEmpresa";
+import Dialog from "../../layout/DialogConfirm";
 
 
 
@@ -24,10 +25,45 @@ export default function EmpresaTodos(){
     
     const [loadOn, setLoadOn] = useState(false);
 
+    const [dialog, setDialog] = useState({
+        message: "",
+        isLoading: false,
+        //Update
+        nameCompany: "",
+        idEmpresa: "",
+        operation: ""
+      });
+
+    const handleDialog = (message, isLoading, nameCompany, idEmpresa, operation) => {
+    setDialog({
+        message,
+        isLoading,
+        //Update
+        nameCompany,
+        idEmpresa,
+        operation
+    });
+    };  
+
+    const areUSureDelete = (choose) => {
+        if (choose) {
+          dialog.operation==="delete" ? excluirEmpresa() :
+          disabledEmpresa();
+          
+          handleDialog("", false);
+        } else {
+          
+          handleDialog("", false);
+        }
+      };
+
     const history = useHistory();
 
     useEffect(()=> {
         findAllByEmpresaName();
+        toast.success('Busca realizada com sucesso.', {
+            position: toast.POSITION.TOP_CENTER
+          })
     },[]);
 
     async function editEmpresa(id){
@@ -67,10 +103,8 @@ export default function EmpresaTodos(){
                 setEmpresas(responses.data._embedded.empresaVoes)
             })
             
-            toast.success('Busca realizada com sucesso.', {
-                position: toast.POSITION.TOP_CENTER
-              })
-              setLoadOn(false);      
+            
+            setLoadOn(false);      
 
           } catch (err){
             toast.error('Erro ao buscar empresas.', {
@@ -82,65 +116,69 @@ export default function EmpresaTodos(){
 
     }  
 
-    async function deleteEmpresa(id) {
+    async function excluirEmpresa(){
+
+        try {
+            await api.delete(`api/empresa/v1/${dialog.idEmpresa}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+            
+            toast.success('Empresa deletada com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+        
+            setEmpresas(empresas.filter(emp => emp.id !== dialog.idEmpresa))
+        } catch (err) {
+            toast.error('Erro ao deletar empresa.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+        
+        }
+
+    }
+
+    async function deleteCompany(id, nome) {
         setLoadOn(true);
 
-        var resultado = window.confirm("Deseja excluir o item selecionado?");
+        handleDialog("Deseja excluir a empresa?", true, nome, id, "delete")
 
-        if(resultado==true){
-            try {
-                await api.delete(`api/empresa/v1/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                })
-                
-                toast.success('Empresa deletada com sucesso.', {
-                    position: toast.POSITION.TOP_CENTER
-                  })
-                  setLoadOn(false);
-                setEmpresas(empresas.filter(emp => emp.id !== id))
-            } catch (err) {
-                toast.error('Erro ao deletar empresa.', {
-                    position: toast.POSITION.TOP_CENTER
-                  })
-                  setLoadOn(false);
-            }
-        }
-            
-        
-        
+        setLoadOn(false);
     }
     
-    async function desabilitar(id){
-        
-        var confirm = window.confirm("Deseja realmente desabilitar a empresa?")
-        if(confirm){
-        setLoadOn(true)
-            try{
+    async function disabledEmpresa(){
+        try{
 
-                await api.patch(`/api/empresa/v1/desabilitar/${id}`, {
-                    //dados que serão atualizados
-                }, {
-                    headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-                })
-                
-                
-                toast.success('Empresa desabilitada com sucesso.', {
-                    position: toast.POSITION.TOP_CENTER
-                  })
-                  setLoadOn(false);
-                findAllByEmpresaName();          
-        
-            } catch (err){
-                toast.error('Erro ao desabilitar empresa.', {
-                    position: toast.POSITION.TOP_CENTER
-                  })
-                  setLoadOn(false);
+            await api.patch(`/api/empresa/v1/desabilitar/${dialog.idEmpresa}`, {
+                //dados que serão atualizados
+            }, {
+                headers: {
+                'Authorization': `Bearer ${accessToken}`
             }
+            })
+            
+            
+            toast.success('Empresa desabilitada com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);
+            findAllByEmpresaName();          
+    
+        } catch (err){
+            toast.error('Erro ao desabilitar empresa.', {
+                position: toast.POSITION.TOP_CENTER
+              })
+              setLoadOn(false);
         }
+    }
+
+    async function desabilitar(id, nome){        
+        setLoadOn(true);
+        
+        handleDialog("Deseja desativar a empresa?",true, nome, id,"disabled");
+    
+        setLoadOn(false);
     }  
 
     return (
@@ -167,7 +205,7 @@ export default function EmpresaTodos(){
                         <td> {p.complemento} </td>
                         <td> {p.dataCadastro} </td>                        
                         <td>
-                            <button onClick={()=> deleteEmpresa(p.id)} className="input-button-deletar" type="submit" >Deletar</button>
+                            <button onClick={()=> deleteCompany(p.id, p.empresaNome)} className="input-button-deletar" type="submit" >Deletar</button>
                             <button onClick={(()=> gerenteEmpresa(p.id))} className="input-button-patch" type="submit" >Gerente</button>
                             <button onClick={()=> editEmpresa(p.id)} className="input-button-alterar" type="submit" >Alterar</button>
                             <button onClick={()=> desabilitar(p.id)} className="input-button-patch" type="submit" >Desabilitar</button>
@@ -197,6 +235,12 @@ export default function EmpresaTodos(){
                     </div> 
                
             </footer>
+            {dialog.isLoading && (<Dialog
+                //Update
+                nameProduct={dialog.nameProduct}
+                onDialog={areUSureDelete}
+                message={dialog.message}
+            />)}
             </div>
 }
         </div>
