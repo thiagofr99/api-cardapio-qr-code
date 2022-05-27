@@ -7,25 +7,51 @@ import { faLinkedin, faGithub, faYoutube } from '@fortawesome/free-brands-svg-ic
 
 import api from '../../services/api'
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import './style.css';
 import CabechalhoManage from "../../layout/CabecalhoManage";
+import Dialog from "../../layout/DialogConfirm";
 
 export default function Manager(){
 
     const [empresaResponse, setEmpresaResponse] = useState();
     const [empresas, setEmpresas] = useState([]);
-    const [cardapios, setCardapios] = useState([]);
-    const [download, setDownload] = useState("");    
+    const [cardapios, setCardapios] = useState([]);    
 
     const [cardapioNome, setCardapioNome] = useState("");    
 
 
-    const [arquivo, setArquivo] = useState('');
-    const [arquivoUpload, setArquivoUpload] = useState('');
+    const [arquivo, setArquivo] = useState('');    
 
+    const [dialog, setDialog] = useState({
+        message: "",
+        isLoading: false,
+        nome: "",
+        id: 0,
+      });
+
+    const handleDialog = (message, isLoading, nome, id) => {
+    setDialog({
+        message,
+        isLoading,        
+        nome,
+        id
+    });
+    };
+
+    const areUSure = (choose) => {
+        if (choose) {
+          deletar();
+          handleDialog("", false);
+        } else {
+          
+          handleDialog("", false);
+        }
+      };
     
     const history = useHistory();
-
 
     const accessToken = sessionStorage.getItem('accessToken');
 
@@ -44,7 +70,9 @@ export default function Manager(){
     async function buscarCardapios(id){
 
         if(id===null || id===undefined){
-            alert("Selecione uma empresa.")
+            toast.warning('Selecione uma empresa vinculada ao Gerente.', {
+                position: toast.POSITION.TOP_CENTER
+              })
         } else {
             try{            
                 const response = await api.get(`api/cardapio/v1/findAllByEmpresa/${id}`,{                
@@ -62,7 +90,9 @@ export default function Manager(){
                 
           
               } catch (err){
-                alert('Erro ao buscar registros!'+err)
+                toast.error('Erro ao carregar dados.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
               }
         }
 
@@ -94,7 +124,9 @@ export default function Manager(){
 
           
               } catch (err){
-                alert('Erro ao buscar registros!'+err)
+                toast.error('Erro ao carregar dados.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
               }
         
 
@@ -128,7 +160,9 @@ export default function Manager(){
 
       
           } catch (err){
-            alert('Erro ao buscar registros!'+err)
+            toast.error('Erro ao fazer o download.', {
+                position: toast.POSITION.TOP_CENTER
+              })
           }
     
 
@@ -156,10 +190,15 @@ export default function Manager(){
                   }
                 });
                               
-                setCardapioNome('');                
-                alert('Cardápio salvo com sucesso.');
+                setCardapioNome('');
+                buscarCardapios(empresaId);
+                toast.success('Cardápio salvo com sucesso.', {
+                    position: toast.POSITION.TOP_CENTER
+                  });
               } catch (err){
-                alert('Erro ao salvar Cardápio!')
+                toast.success('Erro ao salvar cardapio.', {
+                    position: toast.POSITION.TOP_CENTER
+                  })
               }
 
         } else {
@@ -198,38 +237,47 @@ export default function Manager(){
                 setCardapioNome('');
                 setArquivo('');            
               } catch (err){
-                alert('Erro ao salvar Cardápio!')
+                toast.error('Erro ao salvar cardápio.', {
+                    position: toast.POSITION.TOP_CENTER
+                  });
               }
-            
-            alert('Salvo com sucesso.')                      
+              
+            buscarCardapios(empresaId);
+            toast.success('Cardápio salvo com sucesso.', {
+            position: toast.POSITION.TOP_CENTER
+            });                    
           } catch (err){
-            alert('Erro ao fazer upload de cardápio!')
+            toast.error('Erro ao fazer upload do arquivo.', {
+                position: toast.POSITION.TOP_CENTER
+              });
           }
         }
         
       
         };
 
-    async function excluir(id) {
-
-        var resultado = window.confirm("Deseja excluir o item selecionado?");
-
-        if(resultado==true){
-            try {
-                await api.delete(`api/cardapio/v1/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                })
-                
-                alert('Cardapio deletado com sucesso!')
-                setCardapios(cardapios.filter(c => c.id !== id))
-            } catch (err) {
-                alert('Delete failed! Try again.');
-            }
-        }
+    async function deletar(){
+        try {
+            await api.delete(`api/cardapio/v1/${dialog.id}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
             
-        
+            toast.success('Cardápio deletado com sucesso.', {
+                position: toast.POSITION.TOP_CENTER
+              });
+            setCardapios(cardapios.filter(c => c.id !== dialog.id))
+        } catch (err) {
+            toast.error('Erro ao deletar cardápio.', {
+                position: toast.POSITION.TOP_CENTER
+              });
+        }
+    }
+
+    async function excluir(id, nome) {
+
+    handleDialog("Deseja excluir o cardápio?", true, nome, id);
         
     }
 
@@ -275,7 +323,7 @@ export default function Manager(){
                         </td>
                         <td>{ p.dataAtualizacao ===null || p.dataAtualizacao ==='' ? Intl.DateTimeFormat('pt-BR').format(new Date(p.dataCadastro)):Intl.DateTimeFormat('pt-BR').format(new Date(p.dataAtualizacao))}</td>
                         <td>{ p.urlCardapio===null || p.urlCardapio ==='' ? <button className="input-button-patch" onClick={()=> abrirProdutos(p.id)} >Produtos</button> :' '}
-                            <button className="input-button-deletar" onClick={()=> excluir(p.id)} >Excluir</button>
+                            <button className="input-button-deletar" onClick={()=> excluir(p.id, p.cardapioNome)} >Excluir</button>
                         </td>
                     </tr>
                                 ))}
@@ -322,6 +370,12 @@ export default function Manager(){
                     </div> 
                
             </footer>
+            {dialog.isLoading && (<Dialog
+                //Update
+                nameProduct={dialog.nome}
+                onDialog={areUSure}
+                message={dialog.message}
+            />)}
         </div>
     );
 }

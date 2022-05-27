@@ -48,8 +48,7 @@ export default function ProdutoAlterar(){
     const handleData = (id, valorProduto, tipoProdutoVO, produtoNome, observacao, cardapioId, disponivel) => {
         setData({
             id,
-            valorProduto,
-            //Update
+            valorProduto,            
             tipoProdutoVO,
             produtoNome,
             observacao,

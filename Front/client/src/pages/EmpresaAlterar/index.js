@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub, faYoutube } from '@fortawesome/free-brands-svg-icons'
 
 import CabechalhoEmpresa from "../../layout/CabecalhoEmpresa";
-
+import Dialog from "../../layout/DialogConfirm";
 
 
 export default function EmpresaAlterar(){
@@ -38,6 +38,59 @@ export default function EmpresaAlterar(){
     const gerente = sessionStorage.getItem('gerente');
     
     const history = useHistory();
+
+    const [data, setData] = useState({
+        id: 0,
+        cep: 0,
+        complemento: "", 
+        empresaNome: "",
+        numero: 0
+    })
+
+    const handleData = (id, cep, complemento, empresaNome, numero) => {
+        setData({
+            id,
+            cep,
+            complemento, 
+            empresaNome,            
+            numero
+        });
+    };
+
+    const [dialog, setDialog] = useState({
+        message: "",
+        isLoading: false,
+        nome: "",
+        operation:"",
+        empresaId:0,
+        gerenteUser:""
+      });
+
+    const handleDialog = (message, isLoading, nome, operation, empresaId, gerenteUser) => {
+    setDialog({
+        message,
+        isLoading,        
+        nome,
+        operation,
+        empresaId,
+        gerenteUser
+    });
+    };
+    
+    const areUSure = (choose) => {
+        if (choose) {
+          if(dialog.operation=="salvar"){
+            update();
+          } else {
+            managerDefined();
+          }
+          
+          handleDialog("", false);
+        } else {
+          
+          handleDialog("", false);
+        }
+      };
     
 
     useEffect(()=> {
@@ -87,27 +140,10 @@ export default function EmpresaAlterar(){
           }
         
 
-    }  
-
-    async function salvar(e){
-        e.preventDefault();
-
-        var confirm = window.confirm('Deseja salvar os novos dados?')
-
-        if(confirm){
-            var cep = cepMask.replace('-','');
-        
-            var id = myId;
-
-            const data = {
-                id,
-                empresaNome,
-                cep,
-                complemento,
-                numero
-            }
-        
-            try{
+    }
+    
+    async function update(){
+        try{
         
             await api.put('api/empresa/v1/atualizar',data,{
                 headers:{
@@ -131,36 +167,47 @@ export default function EmpresaAlterar(){
                     position: toast.POSITION.TOP_CENTER
                   })
             }
-        }
+    }
+
+    async function salvar(e){
+        e.preventDefault();
+
+        var cep = cepMask.replace('-','');
         
-    
+        var id = myId;
+
+        handleData(id, cep, complemento, empresaNome, numero);
+
+        handleDialog("Deseja realmente alterar a empresa?", true, empresaNome, "salvar");
+                        
     };
+
+    async function managerDefined(){
+        try{
+            
+            await api.patch(`/api/empresa/v1/${dialog.empresaId}/gerente/${dialog.gerenteUser}`, {
+                //dados que serão atualizados
+              }, {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`
+               }
+              })
+            
+              toast.success('Gerente definido com sucesso!', {
+                position: toast.POSITION.TOP_CENTER
+              })                  
+            history.push('/empresa');
+      
+          } catch (err){
+            toast.error('Erro ao tentar definir gerente!', {
+                position: toast.POSITION.TOP_CENTER
+              })     
+          }
+    }
 
     async function definirGerente(userGerente, idEmpresa){        
         
-        var confirm = window.confirm("Deseja definir "+userGerente+" como gerente da empresa?");
-        if(confirm){
-            try{
-            
-
-                await api.patch(`/api/empresa/v1/${idEmpresa}/gerente/${userGerente}`, {
-                    //dados que serão atualizados
-                  }, {
-                    headers: {
-                      'Authorization': `Bearer ${accessToken}`
-                   }
-                  })
-                
-                  
-                alert('Gerente definido com sucesso!')
-                history.push('/empresa');
-          
-              } catch (err){
-                alert('Erro ao renovar registro!'+err)
-              }
-    
-        }
-
+        handleDialog("Deseja definir "+userGerente+" como gerente da empresa?", true, empresaNome, "gerente", idEmpresa, userGerente);
 
     }  
 
@@ -226,6 +273,12 @@ export default function EmpresaAlterar(){
                     </div> 
                
             </footer>
+            {dialog.isLoading && (<Dialog
+                //Update
+                nameProduct={dialog.nome}
+                onDialog={areUSure}
+                message={dialog.message}
+            />)}
         </div>
         
     );
